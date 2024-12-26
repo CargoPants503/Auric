@@ -292,7 +292,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         ImGui::SetNextWindowSize(io.DisplaySize);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
        
-        ImGui::Begin("Hello, world!", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Hello, Test!", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Kyber DLL Path: %s", kyberDllPathStr.c_str());
 
         ImGui::Text("This is some useful text.");
