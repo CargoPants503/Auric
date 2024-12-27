@@ -1883,7 +1883,8 @@ static void ShowDemoWindowWidgets()
         //      return SliderScalar(label, ImGuiDataType_U64, value, &min, &max, format);
         //   }
 
-        // Setup limits (as helper variables so we can take their address, as explained above)
+        // 
+        // limits (as helper variables so we can take their address, as explained above)
         // Note: SliderScalar() functions have a maximum usable range of half the natural type maximum, hence the /2.
         #ifndef LLONG_MIN
         ImS64 LLONG_MIN = -9223372036854775807LL - 1;

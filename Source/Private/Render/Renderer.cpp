@@ -162,7 +162,7 @@ HRESULT PresentHk(IDXGISwapChain* pInstance, UINT syncInterval, UINT flags)
 
     style.Colors[ImGuiCol_Tab] = ImVec4(0.01f, 0.05f, 0.06f, 0.88f);
     style.Colors[ImGuiCol_TabHovered] = ImVec4(0.95f, 0.68f, 0.04f, 1.00f);
-    style.Colors[ImGuiCol_TabActive] = ImVec4(0.95f, 0.68f, 0.04f, 1.00f);
+    style.Colors[ImGuiCol_TabActive] = ImVec4(0.086f, 0.110f, 0.407f, 1.00f);
     style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.28f, 0.28f, 0.57f, 0.82f);
     style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.35f, 0.35f, 0.65f, 0.84f);
 
@@ -296,7 +296,7 @@ Renderer::Renderer()
 
     KYBER_LOG(LogLevel::Debug, "Attempting to find Battlefront window");
 
-    hWnd = FindWindow("Frostbite", "STAR WARS Battlefront II");
+    hWnd = FindWindow(nullptr, "STAR WARS Battlefront");
 
     if (!hWnd)
     {

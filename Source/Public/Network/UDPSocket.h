@@ -170,9 +170,7 @@ public:
     UDPSocket(SocketCreator* creator, ProtocolDirection direction, SocketSpawnInfo info);
     virtual ~UDPSocket();
 
-    virtual bool Connect(const SocketAddr& address, bool blocking = false) override;
-    virtual bool Listen(const SocketAddr& address, bool blocking = false) override;
-    virtual bool Create(bool blocking = false) override;
+    
     void Close();
     virtual bool Send(uint8_t* buffer, int bufferSize, unsigned int flags = 0) override;
     virtual int ReceiveFrom(uint8_t* buffer, int bufferSize) override;
@@ -189,6 +187,10 @@ public:
     virtual int Port() const override;
     virtual const SocketAddr* Address() const override;
     virtual void SendProxyHandshake() override;
+    virtual bool Connect(const SocketAddr& address, bool blocking = false) override;
+    virtual bool Listen(const SocketAddr& address, bool blocking = false) override;
+    virtual bool Create(bool blocking = false) override;
+
 
 private:
     friend class SocketManager;

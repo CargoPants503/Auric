@@ -59,6 +59,7 @@ UDPSocket* SocketManager::Listen(const char* name, bool blocking)
     }
 
     std::string port = addressAndPort.substr(addressAndPort.find(':') + 1);
+    KYBER_LOG(LogLevel::Debug, addressAndPort);
     if (port.empty() || !std::all_of(port.begin(), port.end(), ::isdigit))
     {
         KYBER_LOG(LogLevel::Error, "Invalid port number");

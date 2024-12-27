@@ -11,7 +11,6 @@
 #include <Hook/HookManager.h>
 #include <SDK/SDK.h>
 #include <Network/SocketManager.h>
-#include <API/KyberAPIService.h>
 
 #include <MinHook/MinHook.h>
 
@@ -20,8 +19,8 @@
 #include <chrono>
 #include <thread>
 
-#define OFFSET_CLIENT_STATE_CHANGE HOOK_OFFSET(0x140A8C7A0)
-#define OFFSET_GET_SETTINGS_OBJECT HOOK_OFFSET(0x1401F7BD0)
+#define OFFSET_CLIENT_STATE_CHANGE HOOK_OFFSET(0x143A95BB0)
+#define OFFSET_GET_SETTINGS_OBJECT HOOK_OFFSET(0x143363D80)
 
 Kyber::Program* g_program;
 
@@ -29,8 +28,8 @@ namespace Kyber
 {
 Program::Program(HMODULE module)
     : m_module(module)
-    , m_api(nullptr)
-    , m_server(nullptr)
+    , //m_api(nullptr),
+     m_server(nullptr)
     , m_clientState(ClientState_None)
     , m_joining(false)
 {
@@ -61,32 +60,37 @@ Program::~Program()
     KYBER_LOG(LogLevel::Info, "Destroying Kyber");
     HookManager::RemoveHooks();
     delete m_server;
-    delete m_api;
+    //delete m_api;
     delete g_renderer;
 }
 
 DWORD WINAPI Program::InitializationThread()
 {
     KYBER_LOG(LogLevel::Info, "Initializing...");
+    KYBER_LOG(LogLevel::Info, " ____           ___       ___            _    ");
+    KYBER_LOG(LogLevel::Info, "|  __| ___  __ |_. | ___ | . | ____ -__ | |_   __");
+    KYBER_LOG(LogLevel::Info, "| |__ | .'|| _| _| || . ||  _|| . ||   ||  _||_ -| ");
+    KYBER_LOG(LogLevel::Info, "|____||__,||_| |__//|___||_|  |__,||_|_||_|  |___|");
+    /*
     KYBER_LOG(LogLevel::Info, " _____     _   _   _     ____           _ ");
     KYBER_LOG(LogLevel::Info, "| __  |___| |_| |_| |___|    \\ ___ ___| |_");
     KYBER_LOG(LogLevel::Info, "| __ -| .'|  _|  _| | -_|  |  | .'|_ -|   |");
     KYBER_LOG(LogLevel::Info, "|_____|__,|_| |_| |_|___|____/|__,|___|_|_|");
-
+    */
     InitializeGameHooks();
-
-    m_api = new KyberAPIService();
+    KYBER_LOG(LogLevel::Warning, "Special Thanks to BattleDash, and Andersson799!")
+    //m_api = new KyberAPIService();
     g_renderer = new Renderer();
     m_server = new Server();
 
-    KYBER_LOG(LogLevel::Info, "Initialized Kyber v" << KYBER_VERSION);
-    KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Kyber!");
+    KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);
+    KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Auric!");
 
     while (1)
     {
         if (GetAsyncKeyState(VK_END) & 1)
         {
-            KYBER_LOG(LogLevel::Info, "Ejecting Kyber");
+            KYBER_LOG(LogLevel::Info, "Ejecting Auric");
             FreeLibrary(m_module);
             delete this;
             break;
@@ -98,7 +102,8 @@ DWORD WINAPI Program::InitializationThread()
 }
 
 HookTemplate program_hook_offsets[] = {
-    { OFFSET_CLIENT_STATE_CHANGE, ClientStateChangeHk },
+    { 
+        OFFSET_CLIENT_STATE_CHANGE, ClientStateChangeHk },
     { OFFSET_GET_SETTINGS_OBJECT, GetSettingsObjectHk },
 };
 
@@ -115,7 +120,7 @@ __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, Client
 {
     static const auto trampoline = HookManager::Call(ClientStateChangeHk);
     g_program->m_clientState = currentClientState;
-    KYBER_LOG(LogLevel::DebugPlusPlus, "Client state changed to " << currentClientState);
+    KYBER_LOG(LogLevel::Debug, "Client state changed to " << currentClientState);
     Server* server = g_program->m_server;
     if (currentClientState == ClientState_Startup)
     {

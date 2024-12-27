@@ -6,6 +6,7 @@
 #include <Render/Windows/ServerWindow.h>
 #include <Render/Windows/ClientWindow.h>
 #include <Render/Windows/CreditsWindow.h>
+#include <Render/Windows/ServerSettingsWindow.h>
 #include <Utilities/ErrorUtils.h>
 
 #include <Windows.h>
@@ -23,6 +24,7 @@ MainWindow::MainWindow()
     m_serverWindow = new ServerWindow();
     m_clientWindow = new ClientWindow();
     m_creditsWindow = new CreditsWindow();
+    m_serverSettingsWindow = new ServerSettingsWindow();
 }
 
 bool MainWindow::IsEnabled()
@@ -32,7 +34,7 @@ bool MainWindow::IsEnabled()
 
 void MainWindow::Draw()
 {
-    ImGui::Begin("KYBER", &m_isEnabled, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("AURIC", &m_isEnabled, ImGuiWindowFlags_AlwaysAutoResize);
 
     if (ImGui::Button("SERVER SETUP"))
     {
@@ -42,6 +44,10 @@ void MainWindow::Draw()
     if (ImGui::Button("SERVER BROWSER"))
     {
         m_clientWindow->m_isEnabled = true;
+    }
+    if (ImGui::Button("SERVER SETTINGS"))
+    {
+        m_serverSettingsWindow->m_isEnabled = true;
     }
 
     ImGui::Separator();

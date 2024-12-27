@@ -70,12 +70,12 @@ void DrawServerList()
         {
             serverList = std::optional<std::vector<ServerModel>>(std::vector<ServerModel>());
         }
-        g_program->m_api->GetServerList(page, [&](int responsePage, std::optional<std::vector<ServerModel>> servers) {
-            if (responsePage == page)
-            {
-                serverList = servers;
-            }
-        });
+        //g_program->m_api->GetServerList(page, [&](int responsePage, std::optional<std::vector<ServerModel>> servers) {
+            //if (responsePage == page)
+            //{
+            //    serverList = servers;
+            //}
+        //});
         lastUpdate = std::chrono::system_clock::now().time_since_epoch().count();
         lastPage = page;
     }
@@ -135,17 +135,38 @@ void ClientWindow::Draw()
     ImGui::Begin("Client Settings", &m_isEnabled);
     if (!g_program->m_server->m_running)
     {
-        static char address[15] = "127.0.0.1";
+        if (g_program == nullptr || g_program->m_server == nullptr)
+        {
+            KYBER_LOG(LogLevel::Error, "g_program or g_program->m_server is null!");
+        }
+        static char address[20] = "127.0.0.1";
         ClientSettings* clientSettings = Settings<ClientSettings>("Client");
         ImGui::InputText("Server IP", address, IM_ARRAYSIZE(address));
         if (ImGui::Button("Connect##1") && strlen(address) > 0)
         {
+            if (strcmp(address, "CargoPants") == 0)
+            {
+                strcpy(address, "50.39.197.114"); 
+            }
+            KYBER_LOG(LogLevel::Debug, "TEST")
             SocketSpawnInfo info(false, "", "");
+            KYBER_LOG(LogLevel::Debug, "SocketSpawnInfo Set")
             clientSettings->ServerIp = address;
-            g_program->m_server->m_natClient->Send(reinterpret_cast<uint8_t*>(address), strlen(address) + 1);
+            KYBER_LOG(LogLevel::Debug, "ServerIp Set")
+            if (g_program->m_server->m_natClient) {
+                g_program->m_server->m_natClient->Send(reinterpret_cast<uint8_t*>(address), strlen(address) + 1);
+            }
+            else
+            {
+                KYBER_LOG(LogLevel::Error, "natClient is NULL")
+            }
+            KYBER_LOG(LogLevel::Debug, "Sent natClient")
             g_program->m_server->m_socketSpawnInfo = info;
+            KYBER_LOG(LogLevel::Debug, "Assigned SocketSpawnInfo")
             g_program->m_joining = true;
+            KYBER_LOG(LogLevel::Debug, "m_joining set true")
             g_program->ChangeClientState(ClientState_Startup);
+            KYBER_LOG(LogLevel::Debug, "Changed Client State")
         }
         ImGui::Separator();
         static char serverName[20] = "";

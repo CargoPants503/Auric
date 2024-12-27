@@ -1,5 +1,6 @@
 .vscode
 .vs
+Kyber/vs.
 .idea
 build
 cmake-build-debug

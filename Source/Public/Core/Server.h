@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <string>
 
-#define OFFSET_SERVERGAMECONTEXT_INSTANCE 0x143EC7238
+#define OFFSET_SERVERGAMECONTEXT_INSTANCE 0x142C20A00
 
 namespace Kyber
 {
@@ -35,7 +35,7 @@ public:
     void InitializeGamePatches();
     void InitializeGameSettings();
 
-    void Start(const char* level, const char* mode, int maxPlayers, SocketSpawnInfo info);
+    void Start(const char* level, const char* mode, int maxPlayers /* SocketSpawnInfo info*/);
     void Stop();
 
     void SetPlayerTeam(ServerPlayer* player, int teamId)
@@ -58,6 +58,7 @@ public:
     SocketManager* m_socketManager;
     ISocket* m_natClient;
     ServerPlayerManager* m_playerManager;
+    ServerSpawnOverrides m_serverSpawnOverrides;
     SocketSpawnInfo m_socketSpawnInfo;
     __int64 m_serverInstance;
     bool m_running;

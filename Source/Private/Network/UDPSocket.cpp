@@ -103,7 +103,7 @@ int UDPSocket::ReceiveFrom(uint8_t* buffer, int bufferSize)
         int error = WSAGetLastError();
         if (error != WSAEWOULDBLOCK)
         {
-            KYBER_LOG(LogLevel::Warning, "Error receiving data: " << error);
+            KYBER_LOG(LogLevel::Warning, "Error receiving data: " << error << " " << recvSize << " from " << addressSize);
         }
         return recvSize;
     }

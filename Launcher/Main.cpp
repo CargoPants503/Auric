@@ -5,16 +5,22 @@
 
 #define _WINSOCKAPI_
 #define CPPHTTPLIB_OPENSSL_SUPPORT
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <Windows.h>
+
+#include "Libraries/Images/resource.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+//#include <tchar.h>
+
 #include <stdio.h>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     #include <GLES2/gl2.h>
 #endif
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 #include <cpp-httplib/httplib.h>
 #include <experimental/thread_pool>
@@ -26,6 +32,9 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
     #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+
+bool autoInjectEnabled = false; 
+int processDetectedTime = -1;
 
 static void GlfwErrorCallback(int error, const char* description)
 {
@@ -52,8 +61,8 @@ void DownloadDLL()
         else
         {
             std::stringstream ss;
-            ss << "Failed to download Kyber.dll: " << std::to_string(response->status);
-            MessageBoxA(NULL, ss.str().c_str(), "Kyber Launcher", MB_OK);
+            ss << "Failed to download Auric.dll: " << std::to_string(response->status);
+            MessageBoxA(NULL, ss.str().c_str(), "Auric Launcher", MB_OK);
         }
         dllUpdating = false;
     });
@@ -61,6 +70,7 @@ void DownloadDLL()
 
 void InjectDLL()
 {
+
     if (!std::filesystem::exists(kyberDllPath))
     {
         DownloadDLL();
@@ -75,7 +85,7 @@ void InjectDLL()
     {
         do
         {
-            if (strcmp(pe.szExeFile, "starwarsbattlefrontii.exe") == 0)
+            if (strcmp(pe.szExeFile, "starwarsbattlefront.exe") == 0)
             {
                 pid = pe.th32ProcessID;
                 break;
@@ -87,7 +97,7 @@ void InjectDLL()
     hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (hProc == NULL)
     {
-        MessageBoxA(NULL, "Failed to open starwarsbattlefrontii.exe", "Kyber Launcher", MB_OK);
+        MessageBoxA(NULL, "Failed to open starwarsbattlefront.exe", "Auric Launcher", MB_OK);
         return;
     }
 
@@ -95,27 +105,27 @@ void InjectDLL()
     auto loadLibraryA = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
     if (loadLibraryA == NULL)
     {
-        MessageBoxA(NULL, "Failed to get address of LoadLibraryA", "Kyber Launcher", MB_OK);
+        MessageBoxA(NULL, "Failed to get address of LoadLibraryA", "Auric Launcher", MB_OK);
         return;
     }
-
-    LPVOID remoteDLL = VirtualAllocEx(hProc, NULL, file.string().size(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    std::string file = "D:\\Kyber 2015\\Kyber\\out\\build\\x64-Release\\Kyber.dll";
+    LPVOID remoteDLL = VirtualAllocEx(hProc, NULL, file.size(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (remoteDLL == NULL)
     {
-        MessageBoxA(NULL, "Failed to allocate memory in starwarsbattlefrontii.exe", "Kyber Launcher", MB_OK);
+        MessageBoxA(NULL, "Failed to allocate memory in starwarsbattlefront.exe", "Auric Launcher", MB_OK);
         return;
     }
 
-    if (!WriteProcessMemory(hProc, remoteDLL, file.string().c_str(), file.string().size(), NULL))
+    if (!WriteProcessMemory(hProc, remoteDLL, file.c_str(), file.size(), NULL))
     {
-        MessageBoxA(NULL, "Failed to write memory in starwarsbattlefrontii.exe", "Kyber Launcher", MB_OK);
+        MessageBoxA(NULL, "Failed to write memory in starwarsbattlefront.exe", "Auric Launcher", MB_OK);
         return;
     }
 
     LPVOID remoteThread = CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)loadLibraryA, remoteDLL, 0, NULL);
     if (remoteThread == NULL)
     {
-        MessageBoxA(NULL, "Failed to create remote thread in starwarsbattlefrontii.exe", "Kyber Launcher", MB_OK);
+        MessageBoxA(NULL, "Failed to create remote thread in starwarsbattlefront.exe", "Auric Launcher", MB_OK);
         return;
     }
 
@@ -123,6 +133,35 @@ void InjectDLL()
     VirtualFreeEx(hProc, remoteDLL, 0, MEM_RELEASE);
     CloseHandle(remoteThread);
 }
+void LaunchGame()
+{
+    STARTUPINFO si = { sizeof(STARTUPINFO) };
+    PROCESS_INFORMATION pi;
+    std::string gamePath = "E:\\EA Games\\STAR WARS Battlefront\\starwarsbattlefront.exe"; // Update with actual path
+
+    if (!CreateProcess(gamePath.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+    {
+        MessageBoxA(NULL, "Failed to launch starwarsbattlefront.exe", "Auric Launcher", MB_OK);
+    }
+    else
+    {
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+}
+
+std::filesystem::path GetDllPath()
+{
+    char exePath[MAX_PATH];
+    if (GetModuleFileNameA(nullptr, exePath, MAX_PATH))
+    {
+        std::filesystem::path exeDirectory = std::filesystem::path(exePath).parent_path(); 
+        return exeDirectory / "Kyber.dll";                                                 
+    }
+    return std::filesystem::path();
+}
+
+
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -135,12 +174,21 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    GLFWwindow* window = glfwCreateWindow(500, 400, "Kyber Launcher", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(500, 400, "Auric Launcher", NULL, NULL);
     if (window == NULL)
     {
         return 1;
     }
 
+    HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MYICON));
+
+    if (hIcon)
+    {
+        HWND hwnd = glfwGetWin32Window(window);
+        // Set the big and small icon
+        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+    }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
@@ -273,7 +321,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     //DownloadDLL();
-    kyberDllPath = std::filesystem::temp_directory_path() / "Kyber" / "Kyber.dll";
+    kyberDllPath = GetDllPath();
     std::string kyberDllPathStr = kyberDllPath.u8string();
 
     while (!glfwWindowShouldClose(window))
@@ -284,24 +332,73 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (static_cast<int>(glfwGetTime()) % 5 == 0)
+        // Auto Inject Logic
+        if (autoInjectEnabled)
         {
-            //DownloadDLL();
+            static int lastAttemptTime = 0;
+            int currentTime = static_cast<int>(glfwGetTime());
+
+            // Check every 5 seconds to avoid spamming process checks
+            if (currentTime - lastAttemptTime >= 5)
+            {
+                lastAttemptTime = currentTime;
+
+                if (processDetectedTime == -1) // Process not yet detected
+                {
+                    DWORD pid = 0;
+                    HANDLE hProc = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+                    PROCESSENTRY32 pe = { 0 };
+                    pe.dwSize = sizeof(PROCESSENTRY32);
+                    if (Process32First(hProc, &pe))
+                    {
+                        do
+                        {
+                            if (strcmp(pe.szExeFile, "starwarsbattlefront.exe") == 0)
+                            {
+                                pid = pe.th32ProcessID;
+                                processDetectedTime = currentTime; // Mark the detection time
+                                break;
+                            }
+                        } while (Process32Next(hProc, &pe));
+                    }
+                    CloseHandle(hProc);
+                }
+                else if (currentTime - processDetectedTime >= 5) // Inject after 5 seconds
+                {
+                    InjectDLL();               // Inject the DLL
+                    autoInjectEnabled = false; // Disable Auto Inject after success
+                    processDetectedTime = -1;  // Reset detection time
+                }
+            }
         }
 
+        // ImGui UI
         ImGui::SetNextWindowSize(io.DisplaySize);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-       
-        ImGui::Begin("Hello, Test!", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Kyber DLL Path: %s", kyberDllPathStr.c_str());
 
-        ImGui::Text("This is some useful text.");
+        ImGui::Begin("Auric Launcher", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Please Ensure the Kyber.dll is in the same folder as AuricLauncher.exe");
+        ImGui::Text("DLL Path: %s", kyberDllPathStr.c_str());
+        
 
+        // Auto Inject Button
+        /*
+        if (ImGui::Button("Launch & Auto Inject"))
+        {
+            LaunchGame();             // Launch the game
+            autoInjectEnabled = true; // Enable auto-injection
+            processDetectedTime = -1; // Reset process detection logic
+        }
+        */
         if (ImGui::Button("Inject"))
         {
             InjectDLL();
+            //autoInjectEnabled = true;
+            //processDetectedTime = -1;
         }
+        ImGui::Text("Note: Sometimes launching as admin won't inject into battlefront properly");
 
+        // FPS Display
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
@@ -325,3 +422,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     return 0;
 }
+
+
+// glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);

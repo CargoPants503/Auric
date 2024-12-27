@@ -8,32 +8,32 @@ namespace Kyber
 {
 enum ClientState
 {
-    ClientState_WaitingForStaticBundleLoad,
+    ClientState_WaitingForStaticBundleLoad, // 0
 
-    ClientState_LoadProfileOptions,
-    ClientState_LostConnection,
-    ClientState_WaitingForUnload,
-    ClientState_Startup,
-    ClientState_StartServer,
+    ClientState_LoadProfileOptions, // 1
+    ClientState_LostConnection,     // 2
+    ClientState_WaitingForUnload,   // 3
+    ClientState_Startup,            // 4
+    ClientState_StartServer,        // 5
 
-    ClientState_WaitingForLevel,
-    ClientState_StartLoadingLevel,
-    ClientState_WaitingForLevelLoaded,
-    ClientState_WaitingForLevelLink,
-    ClientState_LevelLinked,
-    ClientState_WaitingForGhosts,
+    ClientState_WaitingForLevel,       // 6
+    ClientState_StartLoadingLevel,     // 7
+    ClientState_WaitingForLevelLoaded, // 8
+    ClientState_WaitingForLevelLink,   // 9
+    ClientState_LevelLinked,           // 10
+    ClientState_WaitingForGhosts,      // 11
 
-    ClientState_Ingame,
-    ClientState_LeaveIngame,
+    ClientState_Ingame,      // 12
+    ClientState_LeaveIngame, // 13
 
-    ClientState_ConnectToServer,
+    ClientState_ConnectToServer, // 14
 
-    ClientState_ShuttingDown,
-    ClientState_Shutdown,
+    ClientState_ShuttingDown, // 15
+    ClientState_Shutdown,     // 16
 
-    ClientState_None,
+    ClientState_None, // 17
 };
-enum SecureReason
+enum SecureReason // needs updating
 {
     SecureReason_Ok,
     SecureReason_WrongProtocolVersion,
@@ -43,6 +43,10 @@ enum SecureReason
     SecureReason_Banned,
     SecureReason_GenericError,
     SecureReason_WrongPassword,
+    SecureReason_KickedOutDemoOver,
+    SecureReason_RankRestricted,
+    SecureReason_ConfigurationNotAllowed,
+    SecureReason_ServerReclaimed,
     SecureReason_MissingContent,
     SecureReason_NotVerified,
     SecureReason_TimedOut,
@@ -50,11 +54,6 @@ enum SecureReason
     SecureReason_NoReply,
     SecureReason_AcceptFailed,
     SecureReason_MismatchingContent,
-    SecureReason_MalformedPacket,
-    SecureReason_SendFail,
-    SecureReason_ConnectionHandshaking,
-    SecureReason_DuplicateConnection,
-
     SecureReason_InteractivityTimeout,
     SecureReason_KickedFromQueue,
     SecureReason_TeamKills,
@@ -77,25 +76,7 @@ enum SecureReason
     SecureReason_KickedCommanderOnLeave,
     SecureReason_KickedCommanderAfterMutiny,
     SecureReason_ServerMaintenance,
-    SecureReason_KickedOutDemoOver,
-    SecureReason_RankRestricted,
-    SecureReason_ConfigurationNotAllowed,
-    SecureReason_ServerReclaimed,
-
-    SecureReason_PlayerRemoveTimedOut,
-    SecureReason_PlayerRemovePoorQuality,
-    SecureReason_PlayerRemovedConnLost,
-    SecureReason_PlayerRemovedBlazeserverConnLost,
-    SecureReason_PlayerRemovedMigrationFailed,
-    SecureReason_PlayerRemovedGameDestroyed,
-    SecureReason_PlayerRemovedQueueFailed,
-    SecureReason_PlayerRemovedExternalSessionFailed,
-    SecureReason_HostDisbandedGroup,
-    SecureReason_PersistenceDownloadFailed,
-
-    SecureReason_ClientInactivity,
-    SecureReason_TrialExpired,
-    SecureReason_TrialUpgraded
+    SecureReason_KickedViaShield,
 };
 class DataContainer
 {
@@ -104,16 +85,18 @@ public:
 };
 enum GamePlatform
 {
-    GamePlatform_Win32,   // 0x0000
-    GamePlatform_Gen4a,   // 0x0001
-    GamePlatform_Gen4b,   // 0x0002
-    GamePlatform_Android, // 0x0003
-    GamePlatform_iOS,     // 0x0004
-    GamePlatform_OSX,     // 0x0005
-    GamePlatform_Linux,   // 0x0006
-    GamePlatform_Any,     // 0x0007
-    GamePlatform_Invalid, // 0x0008
-    GamePlatformCount     // 0x0009
+    GamePlatform_Ps3,
+    GamePlatform_Win32,
+    GamePlatform_Xenon,
+    GamePlatform_Gen4a,
+    GamePlatform_Gen4b,
+    GamePlatform_Android,
+    GamePlatform_iOS,
+    GamePlatform_OSX,
+    GamePlatform_Linux,
+    GamePlatform_Any,
+    GamePlatform_Invalid,
+    GamePlatformCount
 };
 class SystemSettings : public DataContainer
 {
@@ -172,6 +155,51 @@ enum ViewDefinitionType
     ViewType_AutoQuadrant,                // 0x0004
     ViewType_Custom                       // 0x0005
 };
+enum InputActionMapSlot
+{
+    InputActionMapSlot_Undefined,
+    InputActionMapSlot_Root1,
+    InputActionMapSlot_Root2,
+    InputActionMapSlot_Root3,
+    InputActionMapSlot_Root4,
+    InputActionMapSlot_Root5,
+    InputActionMapSlot_Root6,
+    InputActionMapSlot_Root7,
+    InputActionMapSlot_Root8,
+    InputActionMapSlot_Root9,
+    InputActionMapSlot_Root10,
+    InputActionMapSlot_Root11,
+    InputActionMapSlot_Root12,
+    InputActionMapSlot_Root13,
+    InputActionMapSlot_Root14,
+    InputActionMapSlot_Root15,
+    InputActionMapSlot_Root16,
+    InputActionMapSlot_Sticks1,
+    InputActionMapSlot_Sticks2,
+    InputActionMapSlot_Sticks3,
+    InputActionMapSlot_Sticks4,
+    InputActionMapSlot_Buttons1,
+    InputActionMapSlot_Buttons2,
+    InputActionMapSlot_Buttons3,
+    InputActionMapSlot_Buttons4,
+    InputActionMapSlot_Sticks1Buttons1,
+    InputActionMapSlot_Sticks1Buttons2,
+    InputActionMapSlot_Sticks1Buttons3,
+    InputActionMapSlot_Sticks1Buttons4,
+    InputActionMapSlot_Sticks2Buttons1,
+    InputActionMapSlot_Sticks2Buttons2,
+    InputActionMapSlot_Sticks2Buttons3,
+    InputActionMapSlot_Sticks2Buttons4,
+    InputActionMapSlot_Sticks3Buttons1,
+    InputActionMapSlot_Sticks3Buttons2,
+    InputActionMapSlot_Sticks3Buttons3,
+    InputActionMapSlot_Sticks3Buttons4,
+    InputActionMapSlot_Sticks4Buttons1,
+    InputActionMapSlot_Sticks4Buttons2,
+    InputActionMapSlot_Sticks4Buttons3,
+    InputActionMapSlot_Sticks4Buttons4,
+    InputActionMapSlot_Count
+};
 struct ViewDefinition
 {
     LocalPlayerViewId ViewId;    // 0x0000
@@ -187,17 +215,25 @@ struct ViewDefinition
 };
 enum LocalPlayerId
 {
-    LocalPlayerId_0,      // 0x0000
-    LocalPlayerId_1,      // 0x0001
-    LocalPlayerId_2,      // 0x0002
-    LocalPlayerId_3,      // 0x0003
-    LocalPlayerId_4,      // 0x0004
-    LocalPlayerId_5,      // 0x0005
-    LocalPlayerId_6,      // 0x0006
-    LocalPlayerId_7,      // 0x0007
-    LocalPlayerId_Any,    // 0x0008
-    LocalPlayerId_All,    // 0x0009
-    LocalPlayerId_Invalid // 0x000A
+    LocalPlayerId_0, // 0x0000
+    LocalPlayerId_1, // 0x0001
+    LocalPlayerId_2, // 0x0002
+    LocalPlayerId_3, // 0x0003
+    LocalPlayerId_4, // 0x0004
+    LocalPlayerId_5, // 0x0005
+    LocalPlayerId_6, // 0x0006
+    LocalPlayerId_7,
+    LocalPlayerId_Invalid
+};
+enum SKU
+{
+    WW,
+    EU,
+    US,
+    JPN,
+    ROA,
+    RU,
+    EN
 };
 struct PlayerViewDefinition
 {
@@ -210,25 +246,34 @@ class GameModeViewDefinition : public Asset
 public:
     char* GameModeName;                    // 0x0020
     PlayerViewDefinition* ViewDefinitions; // 0x0028
+    float MaxVariableFps;
+};
+class EntryInputActionMapsData
+{
+public:
+    int32_t ActionMapSettingsScheme;
+    InputActionMapSlot DefaultInputActionMap;
+    char pad[8];
+    uint32_t Identifier;
 };
 class GameSettingsComponent : public Asset
 {};
 class VersionData : public Asset
 {
 public:
-    char* disclaimer;   // 0x0020
-    int32_t Version;    // 0x0028
-    char _0x002C[4];    // 0x002C
-    char* DateTime;     // 0x0030
-    char* BranchId;     // 0x0038
-    char* DataBranchId; // 0x0040
-    char* GameName;     // 0x0048
+    char* disclaimer; // 0x0020
+    int32_t Version;  // 0x0028
+    //char _0x002C[4];  // 0x002C
+    char* DateTime;   // 0x0030
+    char* BranchId;   // 0x0038
+    char* GameName;   // 0x0048
 };
 class SubWorldInclusionCriterion : public DataContainer
 {
 public:
-    char** Options; // 0x0018
     char* Name;     // 0x0020
+    char** Options; // 0x0018
+    
 };
 class SubWorldInclusion : public Asset
 {
@@ -242,73 +287,218 @@ class PlayerViewData : public DataContainer
 public:
     SubViewData** SubViews; // 0x0018
 };
+class InputActionMappingsData
+{
+public:
+    char pad[8];
+};
 class PlayerData : public Asset
 {
 public:
     PlayerViewData* PlayerView; // 0x0020
+    EntryInputActionMapsData* InputConceptDefinition;
+    InputActionMappingsData* InputMapping;
+};
+class GameTime : public SystemSettings
+{
+public:
+    float JoinJobsTimeLimit;
+    float YieldTimeLimit;
+    int32_t YieldTime;
+    float MaxSimFps;
+    uint32_t ForceSimRate;
+    float MaxVariableFps;
+    float MaxInactiveVariableFps;
+    float ForceDeltaTime;
+    int32_t ForceDeltaTickCount;
+    int32_t ClampTicks;
+    float TimeScale;
+    float DebugFrameDelay;
+    int32_t FixedSleepTime;
+    bool UseWaitableTimers;
+    bool DoubleNoTickWait;
+    bool VariableSimTickTimeEnable;
+    bool ForceUseSleepTimer;
+    bool ForceSinglePlayerFixedTick;
+    bool ForceMultiplayerOneTickMin;
+    bool EnableSinglePlayerFixedTick;
+    bool AlternatingFramesSleepModeEnable;
+    bool EnableServerJobInterpolation;
+    bool EnableServerJobRunWhileGamePaused;
 };
 class GameSettings : public SystemSettings
 {
 public:
+    uint32_t MaxPlayerCount;
+    uint32_t MaxSpectatorCount;
+    uint32_t MinPlayerCountElimination;
+    LogFileCollisionMode LogFileCollisionMode;
+    uint32_t LogFileRotationHistoryLength;
+    char* Level;
+    char* StartPoint;
+    char* InstallationLevel;
+    char* InstallationStartPoint;
+    char* InstallationDefaultLayerInclusion;
+    char _0x000[8];                          // InputConfiguration InputConfiguration;
+    char* ActiveGameModeViewDefinition;
+    GameModeViewDefinition** GameModeViewDefinitions;
+    TeamId DefaultTeamId;
+    uint32_t PS3ContentRatingAge;
+    uint32_t LogHistory;
+    VersionData* Version;
+    SubWorldInclusion* LayerInclusionTable;
+    char* DefaultLayerInclusion;
+    float TimeBeforeSpawnIsAllowed;
+    float LevelWarmUpTime;
+    float TimeToWaitForQuitTaskCompletion;
+    PlayerData* Player;
+    char pad_test[8]; // DifficultyDatas DifficultySettings;
+    uint32_t DifficultyIndex;
+    SKU CurrentSKU;
+    GameSettingsComponent GameSettingsComponents;
+    bool LogFileEnable;
+    bool ResourceRefreshAlwaysAllowed;
+    bool SpawnMaxLocalPlayersOnStartup;
+    bool UseSpeedBasedDetailedCollision;
+    bool UseSingleWeaponSelector;
+    bool AutoAimEnabled;
+    bool HasUnlimitedAmmo;
+    bool HasUnlimitedMags;
+    bool RotateLogs;
+    bool AdjustVehicleCenterOfMass;
+    bool AimAssistEnabled;
+    bool AimAssistUsePolynomials;
+    bool ForceFreeStreaming;
+    bool ForceDisableFreeStreaming;
+    bool IsGodMode;
+    bool IsJesusMode;
+    bool IsJesusModeAi;
+    bool GameAdministrationEnabled;
+    bool AllowDestructionOutsideCombatArea;
+    bool DefaultCameraInheritsFov;
+    /*
     uint32_t MaxPlayerCount;                          // 0x0020
     char _0x0024[4];                                  // 0x0024
-    GameModeViewDefinition** GameModeViewDefinitions; // 0x0028
+    uint32_t MaxSpectatorCount;
+    char _0x005C[4];                                  // 0x
+    uint32_t MinPlayerCountElimination;
+    LogFileCollisionMode LogFileCollisionMode;        // 0x
+    uint32_t LogFileRotationHistoryLength;            // 0x
+    char* Level;                                      // 0x
+    char* StartPoint;                                 // 0x
+    char* InstallationLevel;                          // 0x
+    char* InstallationStartPoint;                     // 0x
+    char* InstallationDefaultLayerInclusion;          // 0x
+    char* ActiveGameModeViewDefinition;               // 0x
+    GameModeViewDefinition** GameModeViewDefinitions; // 0x
+    TeamId DefaultTeamId;  
     VersionData* Version;                             // 0x0030
-    SubWorldInclusion* SubWorldInclusion;             // 0x0038
-    PlayerData* Player;                               // 0x0040
-    GameSettingsComponent** GameSettingsComponents;   // 0x0048
-    uint32_t MaxSpectatorCount;                       // 0x0050
-    LogFileCollisionMode LogFileCollisionMode;        // 0x0054
-    uint32_t LogFileRotationHistoryLength;            // 0x0058
-    char _0x005C[4];                                  // 0x005C
-    char* Level;                                      // 0x0060
-    char* StartPoint;                                 // 0x0068
-    char* InstallationLevel;                          // 0x0070
-    char* InstallationStartPoint;                     // 0x0078
-    char* InstallationDefaultLayerInclusion;          // 0x0080
-    char* ActiveGameModeViewDefinition;               // 0x0088
-    TeamId DefaultTeamId;                             // 0x0090
-    char _0x0094[4];                                  // 0x0094
-    char* DefaultLayerInclusion;                      // 0x0098
-    float TimeToWaitForQuitTaskCompletion;            // 0x00A0
-    int32_t DifficultyIndex;                          // 0x00A4
+    char* DefaultLayerInclusion;                      // 0x
+    float TimeToWaitForQuitTaskCompletion; 
+    PlayerData* Player;                               // 0x
+    int32_t DifficultyIndex;                          // 0x
+    GameSettingsComponent** GameSettingsComponents;   // 0x
     bool LogFileEnable;                               // 0x00A8
     bool ResourceRefreshAlwaysAllowed;                // 0x00A9
     bool SpawnMaxLocalPlayersOnStartup;               // 0x00AA
-    char _0x00AB[5];                                  // 0x00AB
+
+
+    //SubWorldInclusion* SubWorldInclusion;             // 0x0038
+                                      
+    
+    
+    //char _0x0094[4];                                  // 0x0094
+    //char _0x00AB[5];                                  // 0x00AB
+    */
 };
 class NetworkSettings : public SystemSettings
 {
 public:
+    uint32_t ProtocolVersion;
+    char* TitleId;
+    uint32_t ClientPort;
+    uint32_t ServerPort;
+    uint32_t MaxGhostCount;
+    uint32_t GhostReserveAfterDeleteCount;
+    uint32_t MaxClientToServerGhostCount;
+    uint32_t ClientToServerGhostReserveAfterDeleteCount;
+    uint32_t MaxClientCount;
+    uint32_t MaxClientFrameSize;
+    uint32_t MaxServerFrameSize;
+    char* XlspAddress;
+    char* ServerAddress;
+    char* ClientConnectionDebugFilePrefix;
+    char* ServerConnectionDebugFilePrefix;
+    float SinglePlayerTimeNudgeGhostFrequencyFactor;
+    float SinglePlayerTimeNudgeBias;
+    float SinglePlayerTimeNudge;
+    float SinglePlayerTimeNudgeSmoothingTime;
+    float MemorySocketTimeNudgeGhostFrequencyFactor;
+    float MemorySocketTimeNudgeBias;
+    float MemorySocketTimeNudge;
+    float MemorySocketTimeNudgeSmoothingTime;
+    float LocalHostTimeNudgeGhostFrequencyFactor;
+    float LocalHostTimeNudgeBias;
+    float LocalHostTimeNudge;
+    float LocalHostTimeNudgeSmoothingTime;
+    float DefaultTimeNudgeGhostFrequencyFactor;
+    float DefaultTimeNudgeBias;
+    float DefaultTimeNudge;
+    float DefaultTimeNudgeSmoothingTime;
+    float ConnectTimeout;
+    float PacketLossLogInterval;
+    uint32_t MaxLocalPlayerCount;
+    bool SinglePlayerAutomaticTimeNudge;
+    bool MemorySocketAutomaticTimeNudge;
+    bool LocalHostAutomaticTimeNudge;
+    bool DefaultAutomaticTimeNudge;
+    bool IncrementServerPortOnFail;
+    bool UseFrameManager;
+    bool TimeSyncEnabled;
+
+
+
+
+    /*
     uint32_t ProtocolVersion;                        // 0x0020
     char _0x0024[4];                                 // 0x0024
     char* TitleId;                                   // 0x0028
     uint32_t ClientPort;                             // 0x0030
     uint32_t ServerPort;                             // 0x0034
     uint32_t MaxGhostCount;                          // 0x0038
-    uint32_t MaxClientToServerGhostCount;            // 0x003C
+    uint32_t GhostReserveAfterDeleteCount;
+    uint32_t MaxClientToServerGhostCount;   
+    uint32_t ClientToServerGhostReserveAfterDeleteCount;
+
     uint32_t MaxClientCount;                         // 0x0040
     uint32_t MaxClientFrameSize;                     // 0x0044
     uint32_t MaxServerFrameSize;                     // 0x0048
-    uint32_t MaxNumVoipPeers;                        // 0x004C
+    char* XlspAddress;
     char* ServerAddress;                             // 0x0050
     char* ClientConnectionDebugFilePrefix;           // 0x0058
     char* ServerConnectionDebugFilePrefix;           // 0x0060
+    float SinglePlayerTimeNudgeGhostFrequencyFactor;
     float SinglePlayerTimeNudgeBias;                 // 0x0068
     float SinglePlayerTimeNudge;                     // 0x006C
+    float MemorySocketTimeNudgeGhostFrequencyFactor;
     float MemorySocketTimeNudgeBias;                 // 0x0070
     float MemorySocketTimeNudge;                     // 0x0074
+    float LocalHostTimeNudgeGhostFrequencyFactor;
     float LocalHostTimeNudgeBias;                    // 0x0078
     float LocalHostTimeNudge;                        // 0x007C
+    float LocalHostTimeNudgeSmoothingTime;
+    float DefaultTimeNudgeGhostFrequencyFactor;
     float DefaultTimeNudgeBias;                      // 0x0080
     float DefaultTimeNudge;                          // 0x0084
+    float DefaultTimeNudgeSmoothingTime;
     float ConnectTimeout;                            // 0x0088
     float PacketLossLogInterval;                     // 0x008C
-    uint32_t ValidLocalPlayersMask;                  // 0x0090
-    uint32_t DesiredLocalPlayersMask;                // 0x0094
-    uint32_t PersistentLocalPlayersMask;             // 0x0098
-    uint32_t SinglePlayerMaxMessagesPerNetworkFrame; // 0x009C
-    uint32_t MaxMessagesPerNetworkFrame;             // 0x00A0
+    uint32_t MaxLocalPlayerCount;
+    //uint32_t ValidLocalPlayersMask;                  // 0x0090
+   // uint32_t DesiredLocalPlayersMask;                // 0x0094
+    //uint32_t PersistentLocalPlayersMask;             // 0x0098
+   // uint32_t SinglePlayerMaxMessagesPerNetworkFrame; // 0x009C
+   // uint32_t MaxMessagesPerNetworkFrame;             // 0x00A0
     bool SinglePlayerAutomaticTimeNudge;             // 0x00A4
     bool MemorySocketAutomaticTimeNudge;             // 0x00A5
     bool LocalHostAutomaticTimeNudge;                // 0x00A6
@@ -316,8 +506,8 @@ public:
     bool IncrementServerPortOnFail;                  // 0x00A8
     bool UseFrameManager;                            // 0x00A9
     bool TimeSyncEnabled;                            // 0x00AA
-    bool MLUREnabled;                                // 0x00AB
-    char _0x00AC[4];                                 // 0x00AC
+    //bool MLUREnabled;                                // 0x00AB
+    //char _0x00AC[4];                                 // 0x00AC*/
 };
 struct Guid
 {
@@ -329,6 +519,119 @@ struct Guid
 class ClientSettings : public SystemSettings
 {
 public:
+    char _0x001[8];
+    char _0x002[8];
+    float JuiceDistanceThreshold;
+    float JuiceTimeThreshold;
+    float JuiceVehicleDistanceThreshold;
+    float JuiceVehicleTimeThreshold;
+    char* JuiceReportPerformanceCategory;
+    char* ScreenshotFilename;
+    char* ScreenshotSuffix;
+    uint32_t Team;
+    int32_t SpawnPointIndex;
+    char* ServerIp;
+    char* SecondaryServerIp;
+    float AimScale;
+    float MouseSensitivityMin;
+    float MouseSensitivitySliderRange;
+    float MouseSensitivityFactor;
+    float MouseSensitivityPower;
+    float XenonGamepadDeadZoneCenter;
+    float XenonGamepadDeadZoneAxis;
+    float XenonGamepadDeadZoneOffsetAxis;
+    float PS3GamepadDeadZoneCenter;
+    float PS3GamepadDeadZoneAxis;
+    float PS3GamepadDeadZoneOffsetAxis;
+    float PCGamepadDeadZoneCenter;
+    float PCGamepadDeadZoneAxis;
+    float PCGamepadDeadZoneOffsetAxis;
+    float Gen4aGamepadDeadZoneCenter;
+    float Gen4aGamepadDeadZoneAxis;
+    float Gen4aGamepadDeadZoneOffsetAxis;
+    float Gen4bGamepadDeadZoneCenter;
+    float Gen4bGamepadDeadZoneAxis;
+    float Gen4bGamepadDeadZoneOffsetAxis;
+    float GamepadGuid;
+    float ClientBulletsPerQuery;
+    float IncomingFrequency;
+    uint32_t IncomingRate;
+    uint32_t OutgoingRate;
+    float LoadingTimeout;
+    float LoadedTimeout;
+    float IngameTimeout;
+    char* InstancePath;
+    float FrameHistoryTimeWarnScale;
+    bool IsSpectator;
+    bool VsyncEnable;
+    bool VsyncDuringLoadingScreenEnable;
+    bool VisualFrameInterpolation;
+    bool AllowVideoRecording;
+    bool DebrisClusterEnabled;
+    bool VegetationEnabled;
+    bool ForceEnabled;
+    bool WorldRenderEnabled;
+    bool TerrainEnabled;
+    bool WaterPhysicsEnabled;
+    bool OvergrowthEnabled;
+    bool EffectsEnabled;
+    bool EmittersEnabled;
+    bool AutoIncrementPadIndex;
+    bool JuicePlayerReportPositionEnabled;
+    bool JuiceReportPerformanceEnabled;
+    bool JuiceReportMemoryEnabled;
+    bool JuiceReportPerformanceOnlyOnSimFrames;
+    bool LipSyncEnabled;
+    bool OnDamageSpottingEnabled;
+    bool IgnoreClientFireRateMultiplier;
+    bool PauseGameOnStartUp;
+    bool SkipFastLevelLoad;
+    bool InputEnable;
+    bool ScreenshotToFile;
+    bool LoadMenu;
+    bool DebugMenuOnLThumb;
+    bool InvertFreeCamera;
+    bool ScreenshotComparisonsEnable;
+    bool RenderTags;
+    bool InvertPitch;
+    bool InvertPadPcRightStick;
+    bool Scheme0FlipY;
+    bool Scheme1FlipY;
+    bool Scheme2FlipY;
+    bool InvertYaw;
+    bool ConsoleInputEmulation;
+    bool InputLayoutChangeOnlyForPad;
+    bool SampleInputEveryVisualFrame;
+    bool SampleVisualFrameInputPostFrame;
+    bool HavokVisualDebugger;
+    bool HavokCaptureToFile;
+    bool UseMouseAndKeyboardSystem;
+    bool UseGlobalGamePadInput;
+    bool ShowBuildId;
+    bool ExtractPersistenceInformation;
+    bool EnableRestTool;
+    bool LocalVehicleSimulationEnabled;
+    bool AsyncClientBulletEntity;
+    bool AutoUnspawnDynamicObjects;
+    bool QuitGameOnServerDisconnect;
+    bool DebugTrackAllPlayersInSpawnScreen;
+    bool UseOldKillerCamera;
+    bool LuaOptionSetEnable;
+    bool FrameInterpolationAudioUpdate;
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     Guid AudioSystemGuid;               // 0x0020
     char* ScreenshotFilename;           // 0x0030
     char* ScreenshotSuffix;             // 0x0038
@@ -380,11 +683,35 @@ public:
     bool QuitGameOnServerDisconnect;    // 0x00A9
     bool LuaOptionSetEnable;            // 0x00AA
     bool FastExit;                      // 0x00AB
-    char _0x00AC[4];                    // 0x00AC
+    char _0x00AC[4];                    // 0x00AC*/
 };
 class WSGameSettings : public SystemSettings
 {
 public:
+    char* ReleaseVersionName;
+    float RestartCooldown;
+    float PostSpawnRestartCooldown;
+    float NoInteractivityTimeoutTime;
+    float NoInteractivityThresholdLimit;
+    float PrivateMatchNoInteractivityTimeoutTime;
+    float NoInteractivityTimeoutTimeFirstSpawn;
+    float NoInteractivityPreKickWarning;
+    uint32_t LobbyThreshold;
+    uint32_t LobbyMaxTeamDiff;
+    bool SupportsDebugging;
+    bool Is2PlayersCoop;
+    bool ForceThirdPerson;
+    bool SkipLobby;
+    bool SkipPreRound;
+    bool ForcePrivateMatchLobby;
+    bool UseDamageNumbers;
+    bool StopEOR;
+    bool UnlockAllHeroes;
+    bool AlwaysAllowJoinAsSpectator;
+    bool PCSplitScreen;
+
+
+    /*
     char* ReleaseVersionName;                     // 0x0020
     float RestartCooldown;                        // 0x0028
     float PostSpawnRestartCooldown;               // 0x002C
@@ -410,334 +737,106 @@ public:
     bool StopEOR;                                 // 0x006B
     bool DisableStartupFlow;                      // 0x006C
     bool AutoBalanceTeamsOnNeutral;               // 0x006D
-    char _0x006E[2];                              // 0x006E
+    char _0x006E[2];                              // 0x006E*/
 };
-class AutoPlayerSettings : public SystemSettings
+class CongestionControlSettings
+{
+    uint32_t LatencySampleCount;
+    float LatencyMsMin;
+    float LatencyMsMax;
+    float PacketLossMin;
+    float PacketLossMax;
+    float LatencyIncrMsMin;
+    float LatencyIncrMsMax;
+    float ConnectionGradeBad;
+    float ConnectionGradeGood;
+    float ConnectionGradeBest;
+    float FreqChangeStepScale;
+    float FreqDistScaleMin;
+    float FreqDistBiasMax;
+    bool Enabled;
+};
+class ServerSettings : public SystemSettings
 {
 public:
-    float AFKTakeover;                                           // 0x0020
-    int32_t PlayerCount;                                         // 0x0024
-    int32_t ForcedServerAutoPlayerCount;                         // 0x0028
-    int32_t ForceFillGameplayBotsTeam1;                          // 0x002C
-    int32_t ForceFillGameplayBotsTeam2;                          // 0x0030
-    float RespawnDelay;                                          // 0x0034
-    float InitialRespawnDelay;                                   // 0x0038
-    float ClientJoinDelay;                                       // 0x003C
-    int32_t RoundTimeout;                                        // 0x0040
-    int32_t SquadMembers;                                        // 0x0044
-    int32_t PickupItemsSecondaryObjectiveAttemptIntervalSeconds; // 0x0048
-    float PlannerTerrainVerticalCutoff;                          // 0x004C
-    float PlannerConnectionCutoff;                               // 0x0050
-    float PlannerMaxNodesSearchRadius;                           // 0x0054
-    float PlannerLinkEndArrivalRange;                            // 0x0058
-    float InputScaleYaw;                                         // 0x005C
-    float InputScalePitch;                                       // 0x0060
-    float InputScaleClient;                                      // 0x0064
-    float InputOverrideYaw;                                      // 0x0068
-    float InputOverridePitch;                                    // 0x006C
-    float AimAcceleration;                                       // 0x0070
-    float AimLapTime;                                            // 0x0074
-    float LofTimeoutS;                                           // 0x0078
-    float LofReactionTimeS;                                      // 0x007C
-    int32_t ForceKit;                                            // 0x0080
-    float SquadSpawnProbability;                                 // 0x0084
-    float KitChangeProbability;                                  // 0x0088
-    float UseDefaultUnlocksProbability;                          // 0x008C
-    float WeaponSwapIntervalS;                                   // 0x0090
-    float WeaponSwapPrimaryProbability;                          // 0x0094
-    int32_t VehicleBailTime;                                     // 0x0098
-    float JumpIfStuckTimeSeconds;                                // 0x009C
-    float JumpCooldownSeconds;                                   // 0x00A0
-    float PatrolPositionCooldownSeconds;                         // 0x00A4
-    float ForcedFireTimeMaxS;                                    // 0x00A8
-    float ForcedFireTimeMinS;                                    // 0x00AC
-    float ForcedFireVehicleTimeScale;                            // 0x00B0
-    float ExitVehicleWhenStuckTimeout;                           // 0x00B4
-    float MinDistanceForVehicleUTurn;                            // 0x00B8
-    int32_t MinAirplaneBailOutTime;                              // 0x00BC
-    int32_t MaxAirplaneBailOutTime;                              // 0x00C0
-    float LoginRate;                                             // 0x00C4
-    float SpawnRate;                                             // 0x00C8
-    int32_t MaxSpawnsPerUpdate;                                  // 0x00CC
-    float Variance;                                              // 0x00D0
-    int32_t AirplaneExitInput;                                   // 0x00D4
-    float SecondaryObjectiveGenerationMinSeconds;                // 0x00D8
-    float SecondaryObjectiveGenerationMaxSeconds;                // 0x00DC
-    float EnterVehicleCooldownSeconds;                           // 0x00E0
-    float EnterVehicleProbability;                               // 0x00E4
-    float EnterVehicleSearchRadius;                              // 0x00E8
-    float SecondaryObjectiveTimeoutSeconds;                      // 0x00EC
-    float FortificationProbability;                              // 0x00F0
-    float FortificationSearchRadius;                             // 0x00F4
-    float RepathCooldownSeconds;                                 // 0x00F8
-    float UnStuckVehicleActionsTriggerTimeSeconds;               // 0x00FC
-    float UnstuckMinimalMoveDistance;                            // 0x0100
-    float UnstuckMinimalMoveSuicideTimeout;                      // 0x0104
-    float FallenBelowSuicideTimeout;                             // 0x0108
-    float NavigationPositionToleranceMeters;                     // 0x010C
-    float StuckEscapeProcedureSensorLength;                      // 0x0110
-    float StuckEscapeProcedurePIFraction;                        // 0x0114
-    float StuckEscapeProcedureEscapeDistance;                    // 0x0118
-    float StuckEscapeProcedureActivationSeconds;                 // 0x011C
-    float StuckEscapeProcedureUpdateInterval;                    // 0x0120
-    float StuckEscapeProcedureTimeoutSeconds;                    // 0x0124
-    float UnStuckActionsTriggerTimeSeconds;                      // 0x0128
-    float UnStuckActionsTriggerCooldown;                         // 0x012C
-    int32_t StuckEscapeProcedureRetries;                         // 0x0130
-    float PrimaryInteractionSearchRadius;                        // 0x0134
-    float SecondaryInteractionsProbability;                      // 0x0138
-    float SecondaryInteractionsSearchRadius;                     // 0x013C
-    float SecondaryObjectivePickupItemsSearchRadius;             // 0x0140
-    float SecondaryObjectivePickupItemsInteractOrActionRadius;   // 0x0144
-    float SecondaryReviveSearchDistance;                         // 0x0148
-    float ExpectedTravelTimeDistanceScale;                       // 0x014C
-    float ExpectedTravelTimeBase;                                // 0x0150
-    float InteractAreaTime;                                      // 0x0154
-    int32_t DebugHighlightObjectiveType;                         // 0x0158
-    float SeekAndDestroyMinRadius;                               // 0x015C
-    float SeekAndDestroyMaxRadius;                               // 0x0160
-    float ForceRepathIfTooFarFromWaypointMeters;                 // 0x0164
-    float WaypointMinimumProgressMeters;                         // 0x0168
-    float AimNoiseScale;                                         // 0x016C
-    float TargetMinSwitchTimeS;                                  // 0x0170
-    float MaxTargetEngagingDistanceScale;                        // 0x0174
-    float RandomPathSpreadRadius;                                // 0x0178
-    float RandomPathSpreadCenterDistance;                        // 0x017C
-    float UpdateTargetCooldown;                                  // 0x0180
-    float ForcedTargetTimeoutSeconds;                            // 0x0184
-    float ActionObjectiveDefaultTime;                            // 0x0188
-    float ActionGadgetProbability;                               // 0x018C
-    float ActionGadgetInteractableSearchRadius;                  // 0x0190
-    float HeroSpawnProbability_Gameplay;                         // 0x0194
-    float SpecialSpawnProbability_Gameplay;                      // 0x0198
-    float HeroVehicleSpawnProbability_Gameplay;                  // 0x019C
-    float VehicleSpawnProbability_Gameplay;                      // 0x01A0
-    float HeroSpawnProbability;                                  // 0x01A4
-    float SpecialSpawnProbability;                               // 0x01A8
-    float HeroVehicleSpawnProbability;                           // 0x01AC
-    float VehicleSpawnProbability;                               // 0x01B0
-    float FollowTargetPositionCheckCooldown;                     // 0x01B4
-    float NotAliveAssertTime;                                    // 0x01B8
-    float TimeOnPathToleranceSeconds;                            // 0x01BC
-    float SwimmingSuicideTimeout;                                // 0x01C0
-    float LofPredictionTime;                                     // 0x01C4
-    float TargetTrackerFieldOfViewDegrees;                       // 0x01C8
-    uint32_t UpdateTargetPerFrameCap;                            // 0x01CC
-    char* ReplayTelemetryFile;                                   // 0x01D0
-    char* ReplayTelemetryFileFormat;                             // 0x01D8
-    float ReplayTelemetryAdjustTimePadding;                      // 0x01E0
-    float EvasiveManeuversJumpProbability;                       // 0x01E4
-    float EvasiveManeuversDodgeRollProbability;                  // 0x01E8
-    float EvasiveManeuversInvertStrafeDurationMax;               // 0x01EC
-    float EvasiveManeuversInvertStrafeDurationMin;               // 0x01F0
-    float LegHeadAimRatioOverride;                               // 0x01F4
-    float AttackingAbilityLeftProbability;                       // 0x01F8
-    float AttackingAbilityLeftDurationSeconds;                   // 0x01FC
-    float AttackingAbilityMiddleProbability;                     // 0x0200
-    float AttackingAbilityMiddleDurationSeconds;                 // 0x0204
-    float AttackingAbilityRightProbability;                      // 0x0208
-    float AttackingAbilityRightDurationSeconds;                  // 0x020C
-    float EvasiveManeuversCrouchProbability;                     // 0x0210
-    float EvasiveManeuversCrouchDuration;                        // 0x0214
-    float BlasterLegHeadAimRatio;                                // 0x0218
-    float BlasterAimNoise;                                       // 0x021C
-    float SniperRifleLegHeadAimRatio;                            // 0x0220
-    float SniperRifleAimNoise;                                   // 0x0224
-    float LmgLegHeadAimRatio;                                    // 0x0228
-    float LmgAimNoise;                                           // 0x022C
-    float ShotgunLegHeadAimRatio;                                // 0x0230
-    float ShotgunAimNoise;                                       // 0x0234
-    float LauncherLegHeadAimRatio;                               // 0x0238
-    float LauncherAimNoise;                                      // 0x023C
-    float UseSwordAttackingAbilitiesFromMeters;                  // 0x0240
-    float SwordAttackDurationTimeMinS;                           // 0x0244
-    float SwordAttackDurationTimeMaxS;                           // 0x0248
-    float PauseSwordAttackDurationTimeMinS;                      // 0x024C
-    float PauseSwordAttackDurationTimeMaxS;                      // 0x0250
-    float SwordAttackDistanceMetersMin;                          // 0x0254
-    float SwordAttackDistanceMetersMax;                          // 0x0258
-    float DebugWindowPositionScaleOffsetX;                       // 0x025C
-    float DebugWindowPositionScaleOffsetY;                       // 0x0260
-    int32_t DebugWindowWidth;                                    // 0x0264
-    int32_t DebugWindowHeight;                                   // 0x0268
-    float PathLookAheadMeters;                                   // 0x026C
-    float PathLookRightMeters;                                   // 0x0270
-    float WaypointToleranceMeters;                               // 0x0274
-    float EvasiveManeuversVehicleScale;                          // 0x0278
-    float VehicleAimNoiseScale;                                  // 0x027C
-    float SwordGuardDurationTimeMinS;                            // 0x0280
-    float SwordGuardDurationTimeMaxS;                            // 0x0284
-    float AimNoiseScaleTeam1;                                    // 0x0288
-    float AimNoiseScaleTeam2;                                    // 0x028C
-    float HeroStrafeProbabilityPerFrame;                         // 0x0290
-    float EmoteProbabilityAfterPlayersDeath;                     // 0x0294
-    float EmoteDuration;                                         // 0x0298
-    float MeleeIntervalS;                                        // 0x029C
-    float MeleeDistanceM;                                        // 0x02A0
-    float EvasiveManeuversGroundCheckDistanceM;                  // 0x02A4
-    float EvasiveManeuversGroundCheckHeightDistanceM;            // 0x02A8
-    float EvasiveManeuversGroundCheckHeightOffsetM;              // 0x02AC
-    float EvasiveManeuversGroundCheckCooldownS;                  // 0x02B0
-    float VehicleMinimumForwardThrottle;                         // 0x02B4
-    bool ClientEnabled;                                          // 0x02B8
-    bool AllowClientTakeOver;                                    // 0x02B9
-    bool ForceServerControl;                                     // 0x02BA
-    bool ForceServerObjectiveControl;                            // 0x02BB
-    bool ForceClientObjectiveControl;                            // 0x02BC
-    bool ForceClientNavigation;                                  // 0x02BD
-    bool DebugDrawEnabled;                                       // 0x02BE
-    bool DebugDrawWaypoints;                                     // 0x02BF
-    bool DebugDrawClientDetails;                                 // 0x02C0
-    bool DebugDrawCombatDetails;                                 // 0x02C1
-    bool AllowAddAutoFillPlayers;                                // 0x02C2
-    bool AllowRemoveAutoFillPlayers;                             // 0x02C3
-    bool ForceApplyGameplayBotsCount;                            // 0x02C4
-    bool AllowGameplayBotsToJoinPlayerSquads;                    // 0x02C5
-    bool AllowGameplayBotsToFormOwnSquads;                       // 0x02C6
-    bool AllowVehicleSpawn;                                      // 0x02C7
-    bool ForceDisableVehicleSpawn;                               // 0x02C8
-    bool AllowClientVehicleSpawn;                                // 0x02C9
-    bool AllowFirstClientInitialVehicleSpawn;                    // 0x02CA
-    bool ControlConnectionlessPlayers;                           // 0x02CB
-    bool AllowRespawn;                                           // 0x02CC
-    bool UseTelemetryBasedPlanner;                               // 0x02CD
-    bool DebugTelemetryBasedPlanner;                             // 0x02CE
-    bool UseFadeOverride;                                        // 0x02CF
-    bool InputForceMouse;                                        // 0x02D0
-    bool UseInputOverrideYawPitch;                               // 0x02D1
-    bool UseSeekAndDestroy;                                      // 0x02D2
-    bool AllowTeleport;                                          // 0x02D3
-    bool ForceAllowAllTeleports;                                 // 0x02D4
-    bool DebugDrawTeleports;                                     // 0x02D5
-    bool UpdateAI;                                               // 0x02D6
-    bool DebugDrawClientOnly;                                    // 0x02D7
-    bool DebugDrawClientRealmOnly;                               // 0x02D8
-    bool AllowMoveOutsideCombatArea;                             // 0x02D9
-    bool AllowSpawnOutsideCombatArea;                            // 0x02DA
-    bool AllowVehicleSpawnOutsideCombatArea;                     // 0x02DB
-    bool AllowVehicleSpawnOnly;                                  // 0x02DC
-    bool DebugDrawPrettyPath;                                    // 0x02DD
-    bool DebugDrawUseWaypointsAlpha;                             // 0x02DE
-    bool DebugDrawInvalidMoveIntention;                          // 0x02DF
-    bool DebugSpam;                                              // 0x02E0
-    bool ServerPlayersIgnoreClientPlayers;                       // 0x02E1
-    bool IgnoreHumanPlayers;                                     // 0x02E2
-    bool OpportunisticInteract;                                  // 0x02E3
-    bool AllowMedicRevive;                                       // 0x02E4
-    bool AllowPickupItems;                                       // 0x02E5
-    bool DebugDrawObjectives;                                    // 0x02E6
-    bool DebugDrawObjectiveAlways;                               // 0x02E7
-    bool Wallhack;                                               // 0x02E8
-    bool CombatUseGrenades;                                      // 0x02E9
-    bool CombatUseProne;                                         // 0x02EA
-    bool CombatUseMelee;                                         // 0x02EB
-    bool UseCrouch;                                              // 0x02EC
-    bool AllowPrimaryWeaponForcedFire;                           // 0x02ED
-    bool AllowVehicleForcedFire;                                 // 0x02EE
-    bool AllowEnterVehicle;                                      // 0x02EF
-    bool PrintClientInput;                                       // 0x02F0
-    bool AllowPrimaryObjective;                                  // 0x02F1
-    bool AllowSecondaryObjectivesWhilePassive;                   // 0x02F2
-    bool AllowSecondaryObjectivesWhileDefensive;                 // 0x02F3
-    bool AllowPathfinding;                                       // 0x02F4
-    bool ForcePassiveMode;                                       // 0x02F5
-    bool ForcePrimaryObjectiveDefensiveMode;                     // 0x02F6
-    bool ForcePrimaryObjectiveAggressiveMode;                    // 0x02F7
-    bool ForceSecondaryObjectiveDefensiveMode;                   // 0x02F8
-    bool ForceSecondaryObjectiveAggressiveMode;                  // 0x02F9
-    bool ClientJesusMode;                                        // 0x02FA
-    bool AllowFortifications;                                    // 0x02FB
-    bool UseNameGenerator;                                       // 0x02FC
-    bool AllowStuckEscapeProcedure;                              // 0x02FD
-    bool ExitStuckEscapeProcedureOnVisualCheck;                  // 0x02FE
-    bool DebugDrawUnstuck;                                       // 0x02FF
-    bool AllowSuicide;                                           // 0x0300
-    bool AllowRandomBehavior;                                    // 0x0301
-    bool AllowSecondaryInteractions;                             // 0x0302
-    bool SecondaryObjectiveJesusMode;                            // 0x0303
-    bool DebugDrawNavigationDetails;                             // 0x0304
-    bool DebugDrawNavigationProgressDetails;                     // 0x0305
-    bool DebugDrawCustomInput;                                   // 0x0306
-    bool DebugDrawAimNoise;                                      // 0x0307
-    bool AllowRandomPathSpread;                                  // 0x0308
-    bool ForceUseRandomPathSpread;                               // 0x0309
-    bool DebugDrawPlayersNamesAndIds;                            // 0x030A
-    bool VerboseLogging;                                         // 0x030B
-    bool AllowActionGadget;                                      // 0x030C
-    bool PreferFPSCamera;                                        // 0x030D
-    bool CheckWaterDepthForIntermediatePositions;                // 0x030E
-    bool DebugDrawCombatRaycastHitPoints;                        // 0x030F
-    bool DebugDrawTransforms;                                    // 0x0310
-    bool PickRandomVehicleOnSecondaryObjective;                  // 0x0311
-    bool NeverExitVehicleAfterEntering;                          // 0x0312
-    bool ReplayTelemetryAdjustTime;                              // 0x0313
-    bool DebugDrawWeaponDetails;                                 // 0x0314
-    bool DebugDrawExtensiveClientDetails;                        // 0x0315
-    bool DebugDrawInputDetails;                                  // 0x0316
-    bool DebugDrawAimAtPositions;                                // 0x0317
-    bool ResetSettingsOnLevelUnload;                             // 0x0318
-    bool AllowEvasiveManouversOOB;                               // 0x0319
-    bool EvasiveManeuversGroundCheckEnabled;                     // 0x031A
-    bool EvasiveManeuversVehiclesEnabled;                        // 0x031B
-    bool VehicleUseCharacterThrottle;                            // 0x031C
-    char _0x031D[3];                                             // 0x031D
+    char* InstancePath;
+    uint32_t RemoteControlPort;
+    uint32_t MaxQueriesPerSecond;
+    char* SavePoint;
+    float TimeoutTime;
+    uint32_t PlayerCountNeededForMultiplayer;
+    char* DebugMenuClick;
+    CongestionControlSettings CongestionCtrl;
+    float LoadingTimeout;
+    float IngameTimeout;
+    float OutgoingFrequency;
+    uint32_t IncomingRate;
+    uint32_t OutgoingRate;
+    char* Playlist;
+    int32_t DedicatedServerCpu;
+    uint32_t SaveGameVersion;
+    char* ServerName;
+    char* ServerPassword;
+    float VehicleSpawnDelayModifier;
+    float HumanHealthMultiplier;
+    float RespawnTimeModifier;
+    char* AdministrationPassword;
+    char* RemoteAdministrationPort;
+    bool QueryProviderEnabled;
+    bool DebrisClusterEnabled;
+    bool VegetationEnabled;
+    bool WaterPhysicsEnabled;
+    bool IsDesertingAllowed;
+    bool IsRenderDamageEvents;
+    bool RespawnOnDeathPosition;
+    bool IsStatsEnabled;
+    bool IsNetworkStatsEnabled;
+    bool IsAiEnabled;
+    bool IsDestructionEnabled;
+    bool IsSoldierAnimationEnabled;
+    bool IsSoldierDetailedCollisionEnabled;
+    bool LoadSavePoint;
+    bool DisableCutscenes;
+    bool HavokVisualDebugger;
+    bool HavokCaptureToFile;
+    bool ShowTriggerDebugText;
+    bool TimeoutGame;
+    bool AILooksIntoCamera;
+    bool DeathmatchDebugInfo;
+    bool VehicleInteractionIgnoresSeeThrough;
+    bool JobEnable;
+    bool ThreadingEnable;
+    bool DrawActivePhysicsObjects;
+    bool IsRanked;
+    bool UnlockResolver;
+    bool ScoringLogEnabled;
+    bool InstantUpdateEnabled;
+    bool ForcePlaylist;
+    bool AutoUnspawnBangers;
+    bool RegulatedAIThrottle;
+    bool EnableAnimationCulling;
+    bool FallBackToSquadSpawn;
+    bool SaveGameUseProfileSaves;
+    bool VehicleSpawnAllowed;
+    bool AdministrationEnabled;
+    bool AdministrationLogEnabled;
+    bool AdministrationTimeStampLogNames;
+    bool AdministrationEventsEnabled;
+    bool AdministrationServerNameRestricted;
 };
-struct NetObjectPrioritySettings
-{
-    float MinFrequencyFactor;           // 0x0000
-    float MaxFrequencyFactor;           // 0x0004
-    float MinFrequencyFactorRadius;     // 0x0008
-    float MaxFrequencyFactorRadius;     // 0x000C
-    float MaxFrequencyFactorConeRadius; // 0x0010
-    float MinConeFrequencyFactor;       // 0x0014
-    float CameraFovBiasDegrees;         // 0x0018
-    float MaxCameraFovDegrees;          // 0x001C
-    float MinCameraFovDegrees;          // 0x0020
-};
-struct NetObjectSystemDebugSettings
-{
-    float IncomingReplicationStatusReportMaxDelta;         // 0x0000
-    char _0x0004[4];                                       // 0x0004
-    char* IncomingReplicationStatusReportFilter;           // 0x0008
-    uint32_t InitialGraceTimeInFrames;                     // 0x0010
-    uint32_t ReportReplicationWarningsAfterFrames;         // 0x0014
-    bool EnableReplicationWarnings;                        // 0x0018
-    bool EnableIncomingReplicationStatusReport;            // 0x0019
-    bool IncomingReplicationStatusReportIncludeSpatial;    // 0x001A
-    bool IncomingReplicationStatusReportIncludeStatic;     // 0x001B
-    bool IncomingReplicationStatusReportIncludeNonSpatial; // 0x001C
-    bool IncomingReplicationStatusReportDrawName;          // 0x001D
-    bool OutputObjectProtocols;                            // 0x001E
-    bool WarnOnMissingInitDependency;                      // 0x001F
-    bool WarnOnTooLargeNetObject;                          // 0x0020
-    bool WarnOnNoStateCanBeSent;                           // 0x0021
-    bool WarnOnWaitingForCreationAck;                      // 0x0022
-    char _0x0023[5];                                       // 0x0023
-};
-struct DeltaCompressionSettings
-{
-    uint32_t BaselineReuseCount;          // 0x0000
-    bool IsEnabled;                       // 0x0004
-    bool ShareBaselinesAcrossConnections; // 0x0005
-    char _0x0006[2];                      // 0x0006
-};
-class NetObjectSystemSettings : public DataContainer
+class SyncedGameSettings : public SystemSettings
 {
 public:
-    NetObjectPrioritySettings PrioritySettings;        // 0x0018
-    char _0x003C[4];                                   // 0x003C
-    NetObjectSystemDebugSettings Debug;                // 0x0040
-    DeltaCompressionSettings DeltaCompressionSettings; // 0x0068
-    uint32_t MaxNetObjectCount;                        // 0x0070
-    uint32_t MaxStaticNetObjectCount;                  // 0x0074
-    uint32_t MaxClientConnectionCount;                 // 0x0078
-    uint32_t MaxServerConnectionCount;                 // 0x007C
-    uint32_t InProcBufferSize;                         // 0x0080
-    uint32_t GameViewInProcBufferSize;                 // 0x0084
-    uint32_t MaxRemoteAuthorityNetObjectCount;         // 0x0088
-    int32_t DefaultDynamicPriorityMethod;              // 0x008C
-    int32_t DefaultFilterMethod;                       // 0x0090
-    bool InProcReplicationEnabled;                     // 0x0094
-    char _0x0095[3];                                   // 0x0095
+    uint32_t DifficultyIndex;
+    float BulletDamageModifier;
+    float MaxAllowedLatency;
+    float FrameHistoryTimeMax;
+    float FrameHistoryTime;
+    uint32_t MoveManagerOutgoingFrequency;
+    uint32_t MaxCorrectionUpdateCount;
+    bool DisableToggleEntryCamera;
+    bool DisableRegenerateHealth;
+    bool EnableFriendlyFire;
+    bool AllowClientSideDamageArbitration;
 };
 } // namespace Kyber

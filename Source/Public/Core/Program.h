@@ -8,9 +8,9 @@
 
 #include <Windows.h>
 
-#define OFFSET_GLOBAL_CLIENT 0x143DCB9D0
-#define OFFSET_GLOBAL_SETTINGS_MANAGER 0x143D11950
-#define OFFSET_GET_CLIENT_INSTANCE 0x14659DE50
+#define OFFSET_GLOBAL_CLIENT 0x142B817E0
+#define OFFSET_GLOBAL_SETTINGS_MANAGER 0x142A4EA00
+#define OFFSET_GET_CLIENT_INSTANCE 0x143B9F260
 
 namespace Kyber
 {
@@ -35,12 +35,12 @@ public:
     __int64 ChangeClientState(ClientState currentClientState)
     {
         return ClientStateChangeHk(
-            *reinterpret_cast<__int64*>(*reinterpret_cast<__int64*>(((__int64 (*)(void))OFFSET_GET_CLIENT_INSTANCE)() + 0x20) + 0x28),
+            *reinterpret_cast<__int64*>(*reinterpret_cast<__int64*>(((__int64 (*)(void))OFFSET_GET_CLIENT_INSTANCE)() + 0x38) + 0x20),
             currentClientState, m_clientState);
     }
 
     HMODULE m_module;
-    APIService* m_api;
+    //APIService* m_api;
     Server* m_server;
     ClientState m_clientState;
     bool m_joining;

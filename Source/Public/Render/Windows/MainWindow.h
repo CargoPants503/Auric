@@ -17,6 +17,7 @@ public:
     Window* m_serverWindow;
     Window* m_clientWindow;
     Window* m_creditsWindow;
+    Window* m_serverSettingsWindow;
 };
 } // namespace Kyber
 

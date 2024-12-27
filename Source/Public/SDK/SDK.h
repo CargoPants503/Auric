@@ -1,6 +1,7 @@
 // Copyright BattleDash. All Rights Reserved.
 
 #pragma once
+#include <Network/SocketManager.h>
 
 #include <stddef.h>
 #include <string>
@@ -12,7 +13,13 @@ struct LevelSetup
 {
     std::string name;
 };
-
+struct ServerSpawnOverrides
+{
+    LevelSetup* levelSetup;
+    __int64 socketManager;
+    __int64 connectionCreator;
+    __int64 peerCreator;
+};
 class ServerPlayerManager
 {
 public:
@@ -25,6 +32,7 @@ public:
     class ServerPlayer* m_players[64]; // 0x00F0
     char pad_02F0[1276];               // 0x02F0
 };                                     // Size: 0x07EC
+
 
 class ServerPlayer
 {
@@ -69,6 +77,13 @@ struct ServerSpawnInfo
     void* serverCallbacks = nullptr;
     void* runtimeModules = nullptr;
 };
+struct PlayerData2
+{
+    void* returnAddress;                  // Offset 0x0000: Unknown pointer (return address)
+    const uint32_t networkableGroupCount; // Offset 0x0004: Constant unsigned int
+    uint32_t maxPlayerCount;              // Offset 0x0008: Maximum number of players
+    uint32_t maxSpectatorCount;           // Offset 0x000C: Maximum number of spectators
+};
 
 struct SocketSpawnInfo
 {
@@ -84,4 +99,6 @@ struct SocketSpawnInfo
     const char* serverMode;
     const char* serverLevel;
 };
+
+
 } // namespace Kyber
