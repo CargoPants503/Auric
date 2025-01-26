@@ -108,7 +108,7 @@ void InjectDLL()
         MessageBoxA(NULL, "Failed to get address of LoadLibraryA", "Auric Launcher", MB_OK);
         return;
     }
-    std::string file = "D:\\Kyber 2015\\Kyber\\out\\build\\x64-Release\\Kyber.dll";
+    std::string file = kyberDllPath.string();
     LPVOID remoteDLL = VirtualAllocEx(hProc, NULL, file.size(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (remoteDLL == NULL)
     {
