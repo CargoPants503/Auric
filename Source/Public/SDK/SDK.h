@@ -28,26 +28,29 @@ public:
     uint32_t m_maxPlayerCount;         // 0x0010
     uint32_t m_playerCountBitCount;    // 0x0014
     uint32_t m_playerIdBitCount;       // 0x0018
-    char pad_001C[212];                // 0x001C
-    class ServerPlayer* m_players[64]; // 0x00F0
-    char pad_02F0[1276];               // 0x02F0
+    char pad_001C[628];                // 0x001C
+    class ServerPlayer* m_players[64]; // 0x00F0 //0x290
+    char pad_02F0[1276];               // 0x02F0 // Size: 0x07EC
 };                                     // Size: 0x07EC
 
 
 class ServerPlayer
 {
 public:
-    void* vfunc;                      // 0x0000
+    void* vtable;                      // 0x0000
     class PlayerData* m_data;         // 0x0008
     class MemoryArena* m_memoryArena; // 0x0010
     char* m_name;                     // 0x0018
-    char pad_0020[24];                // 0x0020
+    char pad_0020[20];                // 0x0020
+    uint64_t m_id;                    
     bool m_isAIPlayer;                // 0x0038
     char pad_0039[31];                // 0x0039
     int32_t m_teamId;                 // 0x0058
     char pad_005C[496];               // 0x005C
 
 }; // Size: 0x024C
+
+
 
 class MemoryArena
 {

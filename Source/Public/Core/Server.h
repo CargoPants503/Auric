@@ -20,6 +20,7 @@ void ServerPeerDeleteConnectionHk(__int64 inst, __int64 serverConnection, __int6
 __int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player);
 void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText);
 void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText);
+void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message);
 void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player);
 
 class Server
@@ -50,9 +51,22 @@ public:
 
     void KickPlayer(ServerPlayer* player, char* reason)
     {
-        __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x60);
+        __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x70);
         __int64 serverConnection = ServerPeerConnectionForPlayerHk(serverPeer, player);
         ServerConnectionKickPlayerHk(serverConnection, SecureReason_KickedByAdmin, std::string(reason));
+    }
+
+    void SendKickedMessage(ServerPlayer* inst, const char* name)
+    {
+        std::string message = std::string(name) + " WAS KICKED BY ADMIN";
+        SendServerMessageHk(inst, ChatChannel_Game, message.c_str());
+    }
+
+    void BanPlayer(ServerPlayer* player, char* reason)
+    {
+        __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x70);
+        __int64 serverConnection = ServerPeerConnectionForPlayerHk(serverPeer, player);
+        ServerConnectionKickPlayerHk(serverConnection, SecureReason_KickedViaShield, std::string(reason));
     }
 
     SocketManager* m_socketManager;

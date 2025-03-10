@@ -14,13 +14,7 @@
 namespace Kyber
 {
 ServerWindow::ServerWindow() {
-    //g_program->m_api->GetProxies([&](std::optional<std::vector<KyberProxy>> kyberProxies) {
-        //std::sort(kyberProxies->begin(), kyberProxies->end(), [](const KyberProxy& a, const KyberProxy& b) {
-            //return a.ping < b.ping;
-        //});
-        //kyberProxies->push_back(KyberProxy{ "", "", "", "No Proxy", 0 });
-        //m_proxies = kyberProxies;
-    //});
+
 }
 
 bool ServerWindow::IsEnabled()
@@ -35,17 +29,21 @@ bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index)
         return false;
     }
     ServerPlayer* player = playerList[index];
-    ImGui::Text("%s", player->m_name);
+    std::string playerInfo = std::string(player->m_name) + "  " + std::to_string(player->m_id);
+    ImGui::Text("%s", playerInfo.c_str());
+
     ImGui::SameLine();
     if (ImGui::SmallButton(("SWAP TEAM##" + std::string(player->m_name)).c_str()))
     {
-        g_program->m_server->SetPlayerTeam(player, player->m_teamId == 1 ? 2 : 1);
+        g_program->m_server->SetPlayerTeam(player, *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC) == 1 ? 2 : 1);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton(("KICK##" + std::string(player->m_name)).c_str()))
     {
         g_program->m_server->KickPlayer(player, "You have been kicked.");
+        g_program->m_server->SendKickedMessage(player, player->m_name);
     }
+   
     return true;
 }
 
@@ -103,25 +101,6 @@ void ServerWindow::Draw()
             }
             ImGui::EndCombo();
         }
-        /*
-        if (m_proxies && ImGui::BeginCombo("##proxyCombo", currentProxy.displayName.c_str()))
-        {
-            for (int i = 0; i < m_proxies->size(); i++)
-            {
-                KyberProxy proxy = m_proxies->at(i);
-                bool selected = currentProxy.ip == proxy.ip;
-                if (ImGui::Selectable(proxy.displayName.c_str(), selected))
-                {
-                    currentProxy = proxy;
-                }
-                if (selected)
-                {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-            ImGui::EndCombo();
-        }
-        */
         static int maxPlayers = 40;
         ImGui::SliderInt("Max Players", &maxPlayers, 2, 64);
         if (ImGui::IsItemHovered())
@@ -142,8 +121,7 @@ void ServerWindow::Draw()
         {
             if (strcmp(currentMode.name, "Mode") != 0 && strcmp(currentLevel.name, "Level") != 0)
             {
-                g_program->m_server->Start(currentLevel.level, currentMode.mode, maxPlayers
-                    /*, SocketSpawnInfo(currentProxy.displayName != "No Proxy", currentProxy.ip.c_str(), "Test Server") */);
+                g_program->m_server->Start(currentLevel.level, currentMode.mode, maxPlayers);
             }
             else
             {
@@ -161,11 +139,11 @@ void ServerWindow::Draw()
             errorTime--;
         }
     }
-    if (g_program->m_clientState == ClientState_Ingame) //default: else if
+    if (g_program->m_clientState == ClientState_Ingame || true) //default: else if
     {
-        ImGui::Text("The server host will need a mod to start the game");
-        ImGui::Text("Find it on github.com/CargoPants503/Auric/releases/tag/auricv1.0");
-        ImGui::Text("If the game hasn't started, a mod might be overriding the file!");
+        //ImGui::Text("The server host will need a mod to start the game");
+        //ImGui::Text("Find it on github.com/CargoPants503/Auric/releases/tag/auricv1.0");
+        //ImGui::Text("If the game hasn't started, a mod might be overriding the file!");
         ImGui::Text("Leave this game to start a new one.");
         ImGui::Separator();
         //AutoPlayerSettings* aiSettings = Settings<AutoPlayerSettings>("AutoPlayers");
@@ -193,15 +171,21 @@ void ServerWindow::Draw()
             // Bleh
             players[1] = std::vector<ServerPlayer*>();
             players[2] = std::vector<ServerPlayer*>();
-            /*
             for (ServerPlayer* player : playerManager->m_players)
             {
-                if (player && !player->m_isAIPlayer)
+                if (player)
                 {
-                    players[player->m_teamId].push_back(player);
+                    
+                    uint32_t teamId = *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC); //I have my reasons for doing this instead of using the struct
+                    if (teamId) {
+                        players[teamId].push_back(player);
+                    }
+                    else {
+                        players[1].push_back(player);
+                    }
+                    
                 }
             }
-            KYBER_LOG(LogLevel::Info, "TEST 2");
 
             if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
             {
@@ -227,9 +211,8 @@ void ServerWindow::Draw()
                         break;
                     }
                 }
-                KYBER_LOG(LogLevel::Info, "TEST 3");
                 ImGui::EndTable();
-            }*/
+            }
         }
     }
     else

@@ -33,6 +33,20 @@ enum ClientState
 
     ClientState_None, // 17
 };
+
+enum ChatChannel
+{
+    ChatChannel_All,
+    ChatChannel_Team,
+    ChatChannel_Partner,
+    ChatChannel_Admin,
+    ChatChannel_Game,
+    ChatChannel_Spectator,
+    ChatChannel_Private,
+    ChatChannel_Count,
+};
+
+
 enum SecureReason // needs updating
 {
     SecureReason_Ok,
