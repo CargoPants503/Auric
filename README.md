@@ -15,7 +15,7 @@
 
 ------
 
-Auric does not have proxy support yet. The current version of Auric relies on Port-Forwarding. To make a server joinable, you'll need to open a port through 25200 on your router and share you're personal IP (be careful!).
+Auric does not yet have proxy support. The current version relies on Port Forwarding. To make a server joinable, you'll need to open a port through 25200 on your router and share your personal IP (be careful!).
 
 
 
@@ -24,19 +24,15 @@ What's done:
 * Server starting
 * Networking
 * NAT Punch-Through system
-
-
+* Player kicking/moderation
+* Per-player team swapping
 
 What isn't done:
 * Direct proxy support
 * In-Game server browser
-* Player kicking/moderation
-* Per-player team swapping
 * Optimal proxy detection
-* Built-in mod verification (currently handled at the proxy level, meaning it's unavailable if you direct-connect)
-* Kicking (WIP)
 * UX/UI Styling (WIP)
-* Player banning 
+* Player banning (WIP)
 * Database handling at the proxy level
 
 **Stars and PRs are welcome!**
@@ -45,7 +41,7 @@ What isn't done:
 
 * CargoPants - Responsible for the rewrite to port to 2015 Battlefront & Server Mods
 * BattleDash - Original Source Code and help debugging
-* Andersson799 - Server Crash Fix for MP Inclusion Options
+* Andersson799 - Server Crash Fix for MP Inclusion Options, SetTeamId Offset
 * Kape1223 - UI/Art, Testing
 * Lucapook - Future videos, Testing
 * Any/All contributors to Kyber's source code
