@@ -42,6 +42,7 @@
 #define OFFSET_SERVER_PATCH2 HOOK_OFFSET(0x14450A9E0)
 
 #define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
+//#define OFFSET_CLIENTPLAYERMANAGER HOOK_OFFSET(0x143AC4250) //Created On Game Init -> Meaning cannot catch from when it's created
 
 // Testing Offsets
 
@@ -50,7 +51,7 @@
 //End Testing Offsets
 namespace Kyber
 {
-
+bool isServerPlayerManager = false;
 //Testing
 //using SendServerMessage_t = bool(*)(ServerPlayer* player, ChatChannel channel, const char* message);
 //inline SendServerMessage_t SendServerMessag2e = reinterpret_cast<SendServerMessage_t>(0x144483EF0);
@@ -59,15 +60,17 @@ Server::Server()
     : m_socketSpawnInfo(SocketSpawnInfo(false, "", ""))
     , m_socketManager(new SocketManager(ProtocolDirection::Clientbound, SocketSpawnInfo(false, "", "")))
     , m_natClient(nullptr)
-    , m_playerManager(nullptr)
+    , m_ServerPlayerManager(nullptr)
+    , m_ClientPlayerManager(nullptr)
     , m_running(false)
     , m_hooksRemoved(false)
     , m_serverInstance(0)
+    , m_isFirstLaunch(true)
 {
+    
     InitializeGameHooks();
     DisableGameHooks();
     InitializeGamePatches();
-
     // new std::thread(&Server::PortForwardingThread, this);
 }
 
@@ -141,9 +144,17 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     m_running = true;
     m_hooksRemoved = false;
+
     
 }
+void Kyber::Server::ClientPlayerManagerCtr()
+{
+    KYBER_LOG(LogLevel::Debug, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
 
+    ClientPlayerManager* playerManager = ClientGameContext::Get()->GetPlayerManager();
+
+    g_program->m_server->m_ClientPlayerManager = reinterpret_cast<ClientPlayerManager*>(playerManager);
+}
 __int64 ServerCtorHk(__int64 inst, ServerSpawnInfo& info, SocketManager* socketManager)
 {
     static const auto trampoline = HookManager::Call(ServerCtorHk);
@@ -174,13 +185,34 @@ __int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsig
     static const auto trampoline = HookManager::Call(ServerPlayerManagerHk);
     __int64 result = trampoline(inst, playerData, maxPlayerCount, maxSpectatorCount);
 
-    g_program->m_server->m_playerManager = reinterpret_cast<ServerPlayerManager*>(result);
-
-    if (reinterpret_cast<ServerPlayerManager*>(result)) {
+   
+    g_program->m_server->m_ServerPlayerManager = reinterpret_cast<ServerPlayerManager*>(result);
+    if (reinterpret_cast<ServerPlayerManager*>(result))
+    {
         KYBER_LOG(LogLevel::Debug, "PlayerManager: 0x" << std::hex << reinterpret_cast<ServerPlayerManager*>(result));
     }
     return result;
 }
+
+__int64 __fastcall ClientPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount)
+{
+    
+    static const auto trampoline = HookManager::Call(ClientPlayerManagerHk);
+    __int64 result = trampoline(inst, playerData, maxPlayerCount);
+    /*
+    if (true)
+    {
+        g_program->m_server->m_playerManager = reinterpret_cast<ServerPlayerManager*>(result);
+
+    }
+
+    if (reinterpret_cast<ServerPlayerManager*>(result))
+    {
+        KYBER_LOG(LogLevel::Debug, "ClientPlayerManager: 0x" << std::hex << reinterpret_cast<ServerPlayerManager*>(result));
+    }*/
+    return result;
+}
+
 
 
 
@@ -230,6 +262,8 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
 void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
 {
     static const auto trampoline = HookManager::Call(ServerPlayerSetTeamIdHk);
+    g_program->m_server->InitializeGamePatches2();
+
     trampoline(inst, teamId);
 }
 
@@ -278,6 +312,8 @@ void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* me
 {
     static const auto trampoline = HookManager::Call(SendServerMessageHk);
 
+
+
     if (!(message && inst))
     {
         return;
@@ -314,7 +350,8 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_CLIENT_INIT_NETWORK, ClientInitNetworkHk },
     { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
     { OFFSET_SERVER_PATCH2, ServerPatch2Hk},
-    { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk}
+    { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk}/*,
+    { OFFSET_CLIENTPLAYERMANAGER, ClientPlayerManagerHk}*/
     
 };
 
@@ -354,7 +391,16 @@ void Server::InitializeGamePatches()
     MemoryUtils::Patch((void*)OFFSET_SERVER_PATCH, (void*)ptch, sizeof(ptch));
     BYTE ptch2[] = { 0x90, 0x90 };
     MemoryUtils::Patch((void*)(OFFSET_SERVER_PATCH + 0x5), (void*)ptch2, sizeof(ptch2));
+
+   
+
     HookManager::EnableHook(OFFSET_SERVERPLAYERMANAGER);
+}
+
+void Server::InitializeGamePatches2()
+{
+    BYTE ptch3[] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; // NOP out the instruction
+    //MemoryUtils::Patch((void*)OFFSET_INVINCIBILITY_TEST, (void*)ptch3, sizeof(ptch3));
 }
 
 void Server::InitializeGameSettings()
@@ -385,7 +431,7 @@ void Server::InitializeGameSettings()
 void Server::Stop()
 {
     m_running = false;
-    m_playerManager = nullptr;
+    m_ClientPlayerManager = nullptr;
     UDPSocket* socket = m_socketManager->m_sockets.back();
     if (socket != m_natClient)
     {

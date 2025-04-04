@@ -22,7 +22,7 @@ bool ServerWindow::IsEnabled()
     return g_mainWindow->IsEnabled() && m_isEnabled;
 }
 
-bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index)
+bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index, bool isHoster)
 {
     if (playerList.size() <= index)
     {
@@ -33,16 +33,20 @@ bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index)
     ImGui::Text("%s", playerInfo.c_str());
 
     ImGui::SameLine();
-    if (ImGui::SmallButton(("SWAP TEAM##" + std::string(player->m_name)).c_str()))
-    {
-        g_program->m_server->SetPlayerTeam(player, *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC) == 1 ? 2 : 1);
+    if (isHoster) {
+        if (ImGui::SmallButton(("SWAP TEAM##" + std::string(player->m_name)).c_str()))
+        {
+            g_program->m_server->SetPlayerTeam(player, *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC) == 1 ? 2 : 1);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton(("KICK##" + std::string(player->m_name)).c_str()))
+        {
+            g_program->m_server->KickPlayer(player, "You have been kicked.");
+            g_program->m_server->SendKickedMessage(player, player->m_name);
+        }
     }
-    ImGui::SameLine();
-    if (ImGui::SmallButton(("KICK##" + std::string(player->m_name)).c_str()))
-    {
-        g_program->m_server->KickPlayer(player, "You have been kicked.");
-        g_program->m_server->SendKickedMessage(player, player->m_name);
-    }
+
+    
    
     return true;
 }
@@ -139,51 +143,53 @@ void ServerWindow::Draw()
             errorTime--;
         }
     }
-    if (g_program->m_clientState == ClientState_Ingame || true) //default: else if
+    if (g_program->m_clientState) // default: else if
     {
-        //ImGui::Text("The server host will need a mod to start the game");
-        //ImGui::Text("Find it on github.com/CargoPants503/Auric/releases/tag/auricv1.0");
-        //ImGui::Text("If the game hasn't started, a mod might be overriding the file!");
+        // ImGui::Text("The server host will need a mod to start the game");
+        // ImGui::Text("Find it on github.com/CargoPants503/Auric/releases/tag/auricv1.0");
+        // ImGui::Text("If the game hasn't started, a mod might be overriding the file!");
         ImGui::Text("Leave this game to start a new one.");
         ImGui::Separator();
-        //AutoPlayerSettings* aiSettings = Settings<AutoPlayerSettings>("AutoPlayers");
+        // AutoPlayerSettings* aiSettings = Settings<AutoPlayerSettings>("AutoPlayers");
 
-        //if (ImGui::Button("START GAME"))
+        // if (ImGui::Button("START GAME"))
         //{
-            // These bots don't actually exist, it just tricks the server into thinking they do.
-            //aiSettings->ForceFillGameplayBotsTeam1 = 20;
-            //aiSettings->ForceFillGameplayBotsTeam2 = 19;
+        //  These bots don't actually exist, it just tricks the server into thinking they do.
+        // aiSettings->ForceFillGameplayBotsTeam1 = 20;
+        // aiSettings->ForceFillGameplayBotsTeam2 = 19;
         //}
         ImGui::Separator();
-        //ImGui::Text("AI SETTINGS");
-        //ImGui::SliderInt("AI COUNT", &aiSettings->ForcedServerAutoPlayerCount, -1, 64);
-        //ImGui::Checkbox("UPDATE AI", &aiSettings->UpdateAI);
+        // ImGui::Text("AI SETTINGS");
+        // ImGui::SliderInt("AI COUNT", &aiSettings->ForcedServerAutoPlayerCount, -1, 64);
+        // ImGui::Checkbox("UPDATE AI", &aiSettings->UpdateAI);
         ImGui::SameLine();
-        //ImGui::Checkbox("AI IGNORE PLAYERS", &aiSettings->ServerPlayersIgnoreClientPlayers);
-        //ImGui::Checkbox("AUTO BALANCE TEAMS", &Settings<WSGameSettings>("Whiteshark")->AutoBalanceTeamsOnNeutral);
+        // ImGui::Checkbox("AI IGNORE PLAYERS", &aiSettings->ServerPlayersIgnoreClientPlayers);
+        // ImGui::Checkbox("AUTO BALANCE TEAMS", &Settings<WSGameSettings>("Whiteshark")->AutoBalanceTeamsOnNeutral);
         ImGui::Separator();
         ImGui::Text("PLAYER LIST");
-
-        ServerPlayerManager* playerManager = g_program->m_server->m_playerManager;
-        if (playerManager)
+        ServerPlayerManager* serverPlayerManager = g_program->m_server->m_ServerPlayerManager;
+        ClientPlayerManager* clientPlayerManager = g_program->m_server->m_ClientPlayerManager;
+        
+        if (serverPlayerManager != nullptr && g_program->m_clientState == ClientState_Ingame) // Is ServerPlayerManager
         {
             std::map<int32_t, std::vector<ServerPlayer*>> players;
             // Bleh
             players[1] = std::vector<ServerPlayer*>();
             players[2] = std::vector<ServerPlayer*>();
-            for (ServerPlayer* player : playerManager->m_players)
+            for (ServerPlayer* player : serverPlayerManager->m_players)
             {
                 if (player)
                 {
-                    
-                    uint32_t teamId = *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC); //I have my reasons for doing this instead of using the struct
-                    if (teamId) {
+                    uint32_t teamId = *reinterpret_cast<uint32_t*>(
+                        reinterpret_cast<uint8_t*>(player) + 0x2BAC); // I have my reasons for doing this instead of using the struct
+                    if (teamId)
+                    {
                         players[teamId].push_back(player);
                     }
-                    else {
+                    else
+                    {
                         players[1].push_back(player);
                     }
-                    
                 }
             }
 
@@ -201,7 +207,7 @@ void ServerWindow::Draw()
                     for (int j = 1; j <= players.size(); j++)
                     {
                         ImGui::TableNextColumn();
-                        if (DrawScoreboardPlayer(players[j], i))
+                        if (DrawScoreboardPlayer(players[j], i, true))
                         {
                             drew++;
                         }
@@ -212,6 +218,60 @@ void ServerWindow::Draw()
                     }
                 }
                 ImGui::EndTable();
+            }
+        }
+        else
+        {
+            if (serverPlayerManager == nullptr && clientPlayerManager && (g_program->m_clientState == ClientState_Ingame  || g_program->m_server->m_isFirstLaunch)) // Is Client Manager
+            {
+                
+                std::map<int32_t, std::vector<ServerPlayer*>> players;
+                // Bleh
+                players[1] = std::vector<ServerPlayer*>();
+                players[2] = std::vector<ServerPlayer*>();
+                for (ServerPlayer* player : clientPlayerManager->m_players)
+                {
+                    if (player)
+                    {
+                        uint32_t teamId = *reinterpret_cast<uint32_t*>(
+                            reinterpret_cast<uint8_t*>(player) + 0x2BAC); // I have my reasons for doing this instead of using the struct
+                        if (teamId)
+                        {
+                            players[teamId].push_back(player);
+                        }
+                        else
+                        {
+                            players[1].push_back(player);
+                        }
+                    }
+                }
+
+                if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("LIGHT SIDE");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("DARK SIDE");
+                    for (int i = 0; i < 64; i++)
+                    {
+                        ImGui::TableNextRow();
+                        int drew = 0;
+                        for (int j = 1; j <= players.size(); j++)
+                        {
+                            ImGui::TableNextColumn();
+                            if (DrawScoreboardPlayer(players[j], i, false))
+                            {
+                                drew++;
+                            }
+                        }
+                        if (!drew)
+                        {
+                            break;
+                        }
+                    }
+                    ImGui::EndTable();
+                }
             }
         }
     }

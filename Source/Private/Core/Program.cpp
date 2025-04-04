@@ -82,6 +82,7 @@ DWORD WINAPI Program::InitializationThread()
     //m_api = new KyberAPIService();
     g_renderer = new Renderer();
     m_server = new Server();
+    m_server->ClientPlayerManagerCtr();
 
     KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);
     KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Auric!");
@@ -120,6 +121,7 @@ __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, Client
 {
     static const auto trampoline = HookManager::Call(ClientStateChangeHk);
     g_program->m_clientState = currentClientState;
+    g_program->m_server->m_isFirstLaunch = false; //For ServerWindow.cpp UI fixing
     KYBER_LOG(LogLevel::Debug, "Client state changed to " << currentClientState);
     Server* server = g_program->m_server;
     if (currentClientState == ClientState_Startup)

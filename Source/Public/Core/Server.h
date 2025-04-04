@@ -22,6 +22,7 @@ void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText
 void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText);
 void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message);
 void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player);
+void CreatePlayerManager();
 
 class Server
 {
@@ -34,8 +35,9 @@ public:
     void EnableGameHooks();
     void DisableGameHooks();
     void InitializeGamePatches();
+    void InitializeGamePatches2();
     void InitializeGameSettings();
-
+    void ClientPlayerManagerCtr();
     void Start(const char* level, const char* mode, int maxPlayers /* SocketSpawnInfo info*/);
     void Stop();
 
@@ -70,12 +72,18 @@ public:
     }
 
     SocketManager* m_socketManager;
-    ISocket* m_natClient;
-    ServerPlayerManager* m_playerManager;
+    ISocket* m_natClient; // ServerPlayerManager* m_playerManager;
+    ServerPlayerManager* m_ServerPlayerManager;
+    ClientPlayerManager* m_ClientPlayerManager;
     ServerSpawnOverrides m_serverSpawnOverrides;
     SocketSpawnInfo m_socketSpawnInfo;
     __int64 m_serverInstance;
     bool m_running;
     bool m_hooksRemoved;
+        // the m_isFirstLaunch basically forces the ClientPlayerManager 
+        // to be visible as soon as the game launches because the client 
+        // state isn't set when is apart of controlling the visiblity
+    bool m_isFirstLaunch;
+
 };
 } // namespace Kyber
