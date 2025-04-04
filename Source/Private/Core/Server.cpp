@@ -408,6 +408,7 @@ void Server::InitializeGameSettings()
     WSGameSettings* wsSettings = Settings<WSGameSettings>("Whiteshark");
     GameTime* gameTimeSettings = Settings<GameTime>("GameTime");
     GameSettings* gameSettings = Settings<GameSettings>("Game");
+    OnlineSettings* onlineSettings = Settings<OnlineSettings>("Online");
     gameTimeSettings->TimeScale = 1;
     wsSettings->ForcePrivateMatchLobby = true;
     wsSettings->NoInteractivityTimeoutTime = 600;
@@ -418,6 +419,9 @@ void Server::InitializeGameSettings()
     wsSettings->SupportsDebugging = true;
     wsSettings->LobbyMaxTeamDiff = 20;
     wsSettings->LobbyThreshold = 1;
+    onlineSettings->MatchmakingScenario = "DevUltraQuick";
+    onlineSettings->MatchmakingScenarioWithLevel = "DevUltraQuick";
+
 
 
 
@@ -428,9 +432,10 @@ void Server::InitializeGameSettings()
     //aiSettings->AllowSuicide = false;
 }
 
-void Server::Stop()
+void Server::Stop() 
 {
     m_running = false;
+    m_ServerPlayerManager = nullptr;
     m_ClientPlayerManager = nullptr;
     UDPSocket* socket = m_socketManager->m_sockets.back();
     if (socket != m_natClient)

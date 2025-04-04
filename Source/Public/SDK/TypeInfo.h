@@ -340,6 +340,83 @@ public:
     bool EnableServerJobInterpolation;
     bool EnableServerJobRunWhileGamePaused;
 };
+enum BackendType
+{
+    Backend_Lan,
+    Backend_Blaze,
+    Backend_Peer,
+    Backend_Local,
+    Backend_Playground,
+    Backend_Count_
+};
+enum OnlineEnvironment
+{
+    OnlineEnvironment_Development,
+    OnlineEnvironment_Test,
+    OnlineEnvironment_Certification,
+    OnlineEnvironment_Production,
+    OnlineEnvironment_Count,
+};
+enum LogLevelType
+{
+    LogLevel_Default,
+    LogLevel_Fatal,
+    LogLevel_Error,
+    LogLevel_Warn,
+    LogLevel_Info,
+    LogLevel_Debug,
+    LogLevel_Trace,
+};
+class OnlineSettings : public SystemSettings
+{
+public:
+    BackendType Backend;
+    BackendType PeerBackend;
+    OnlineEnvironment Environment;
+    char pad_0001[16]; // PointerRef<OnlineProviderAsset> Provider;
+    // List<OnlinePlatformConfiguration> Platforms;
+    char* ServiceNameOverride;
+    LogLevelType LogLevel;
+    int32_t BlazeLogLevel;
+    int32_t DirtySockLogLevel;
+    char pad_0002[16];
+    // PointerRef<OnlineRichPresenceData> RichPresenceData;
+    // PointerRef<> LicenseConfig;
+    char* MatchmakingScenario;
+    char* MatchmakingScenarioWithLevel;
+    char* Region;
+    char* Country;
+    char* PingSite;
+    char* MatchmakingToken;
+    uint32_t NegativeUserCacheRefreshPeriod;
+    char* ServerLoginEmail;
+    char* ServerLoginPassword;
+    char* ServerLoginPersonaName;
+    int32_t BlazeServerConnectionTimeout;
+    int32_t BlazeServerTimeout;
+    int32_t BlazeClientConnectionTimeout;
+    int32_t BlazeClientTimeout;
+    int32_t PeerPort;
+    uint32_t BlazeCachedUserRefreshInterval;
+    int32_t DirtySockServerPacketQueueCapacity;
+    uint32_t MinPlayerCapacity;
+    uint32_t MaxPlayerCapacity;
+    uint32_t GameQueueCapacity;
+    bool AssertOnPresenceRequestFailures;
+    bool ClientIsPresenceEnabled;
+    bool ServerIsPresenceEnabled;
+    bool IsSecure;
+    bool EnableQoS;
+    bool WaitForQoS;
+    bool ServerIsReconfigurable;
+    bool SupportHostMigration;
+    bool ServerAllowAnyReputation;
+    bool DirtySockVoipEnabled;
+    bool MatchmakingRoleEnabled;
+    bool EnableNucleusLtOverride;
+};
+
+
 class GameSettings : public SystemSettings
 {
 public:
