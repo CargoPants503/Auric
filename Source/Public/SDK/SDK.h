@@ -4,7 +4,7 @@
 #include <Network/SocketManager.h>
 
 //#include <EASTL/string.h>
-//#include <EASTL/fixed_vector.h>
+#include <EASTL/fixed_vector.h>
 
 #include <stddef.h>
 #include <string>
@@ -38,6 +38,25 @@ public:
     char pad_005C[496]; // 0x005C
 
 }; // Size: 0x024C
+
+
+
+class EastlServerPlayerManager
+{
+public:
+    char pad_0000[8];               // 0x0000
+    class PlayerData* m_playerData; // 0x0008
+    uint32_t m_maxPlayerCount;      // 0x0010
+    uint32_t m_playerCountBitCount; // 0x0014
+    uint32_t m_playerIdBitCount;    // 0x0018
+    char pad_001C[628];             // 0x001C
+    //ServerPlayer* m_players[64];
+    eastl::fixed_vector<ServerPlayer*, 64> m_players; // 0x00C8
+
+    // class ServerPlayer* m_players[64]; // 0x00F0 //0x290
+    char pad_02F0[1276]; // 0x02F0 // Size: 0x07EC
+};
+
 
 class ServerPlayerManager
 {
@@ -126,7 +145,12 @@ public:
     class ClientCameraViewManager* cameraViewManager; // 0x0228
 };
 */
-
+class ServerGameContext
+{
+public:
+    char pad_0000[104];
+    EastlServerPlayerManager* m_eastlServerPlayerManager;
+};
 
 
 class MemoryArena

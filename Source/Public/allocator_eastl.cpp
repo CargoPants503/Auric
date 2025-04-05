@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2002-2013 Electronic Arts, Inc.  All rights reserved.
+Copyright (C) 2009,2010,2012 Electronic Arts, Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -27,46 +27,54 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifndef INCLUDED_earesult_H
-#define INCLUDED_earesult_H
+
+#include <EASTL/internal/config.h>
+#include <EASTL/allocator.h>
 
 
-#include <EABase/eabase.h>
-
-#if defined(EA_PRAGMA_ONCE_SUPPORTED)
-    #pragma once /* Some compilers (e.g. VC++) benefit significantly from using this. We've measured 3-4% build speed improvements in apps as a result. */
-#endif
-
-
-
-/* This result type is width-compatible with most systems. */
-typedef int32_t ea_result_type;
+///////////////////////////////////////////////////////////////////////////////
+// ReadMe
+//
+// This file implements the default application allocator. 
+// You can replace this allocator.cpp file with a different one,
+// you can define EASTL_USER_DEFINED_ALLOCATOR below to ignore this file,
+// or you can modify the EASTL config.h file to redefine how allocators work.
+///////////////////////////////////////////////////////////////////////////////
 
 
-namespace EA
-{
-    typedef int32_t result_type;
+#ifndef EASTL_USER_DEFINED_ALLOCATOR // If the user hasn't declared that he has defined an allocator implementation elsewhere...
 
-    enum
+    namespace eastl
     {
-        SUCCESS =  0,
-        FAILURE = -1
-    };
-}
+
+        /// gDefaultAllocator
+        /// Default global allocator instance. 
+        EASTL_API allocator   gDefaultAllocator;
+        EASTL_API allocator* gpDefaultAllocator = &gDefaultAllocator;
+
+        EASTL_API allocator* GetDefaultAllocator()
+        {
+            return gpDefaultAllocator;
+        }
+
+        EASTL_API allocator* SetDefaultAllocator(allocator* pAllocator)
+        {
+            allocator* const pPrevAllocator = gpDefaultAllocator;
+            gpDefaultAllocator = pAllocator;
+            return pPrevAllocator;
+        }
+
+    } // namespace eastl
 
 
-/* Macro to simplify testing for success. */
-#ifndef EA_SUCCEEDED
-    #define EA_SUCCEEDED(result) ((result) >= 0)
-#endif
-
-/* Macro to simplfify testing for general failure. */
-#ifndef EA_FAILED
-    #define EA_FAILED(result) ((result) < 0)
-#endif
+#endif // EASTL_USER_DEFINED_ALLOCATOR
 
 
-#endif
+
+
+
+
+
 
 
 

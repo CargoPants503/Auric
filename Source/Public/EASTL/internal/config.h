@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2005,2009,2010,2012,2013 Electronic Arts, Inc.  All rights reserved.
+Copyright (C) 2005,2009,2010,2012 Electronic Arts, Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -144,6 +144,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Implements support for the definition of EA_PLATFORM_MICROSOFT for the case
 // of using EABase versions prior to the addition of its EA_PLATFORM_MICROSOFT support.
 //
+#if (EABASE_VERSION_N < 20022) && !defined(EA_PLATFORM_MICROSOFT)
+    #if defined(EA_PLATFORM_WINDOWS) || defined(CS_UNDEFINED_STRING)
+        #define EA_PLATFORM_MICROSOFT 1
+    #endif
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

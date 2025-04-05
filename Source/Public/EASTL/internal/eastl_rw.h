@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2009, 2010, 2012, 2013 Electronic Arts, Inc.  All rights reserved.
+Copyright (C) 2009, 2010, 2012 Electronic Arts, Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -81,7 +81,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__GNUC__) && (defined(__ICL) || defined(__ICC))
     #define EA_COMPILER_NO_EXCEPTIONS
-#elif (defined(__GNUC__) || (defined(__ICL) || defined(__ICC))) && !defined(__EXCEPTIONS)
+#elif (defined(__GNUC__) || (defined(__ICL) || defined(__ICC)) || defined(CS_UNDEFINED_STRING)) && !defined(__EXCEPTIONS)
     #define EA_COMPILER_NO_EXCEPTIONS
 #elif (defined(__BORLANDC__) || defined(_MSC_VER)) && !defined(_CPPUNWIND)
     #define EA_COMPILER_NO_UNWIND

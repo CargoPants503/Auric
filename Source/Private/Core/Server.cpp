@@ -185,7 +185,6 @@ __int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsig
     static const auto trampoline = HookManager::Call(ServerPlayerManagerHk);
     __int64 result = trampoline(inst, playerData, maxPlayerCount, maxSpectatorCount);
 
-   
     g_program->m_server->m_ServerPlayerManager = reinterpret_cast<ServerPlayerManager*>(result);
     if (reinterpret_cast<ServerPlayerManager*>(result))
     {

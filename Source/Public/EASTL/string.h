@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2005,2009,2010,2012, 2013 Electronic Arts, Inc.  All rights reserved.
+Copyright (C) 2005,2009,2010,2012 Electronic Arts, Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -695,22 +695,10 @@ namespace eastl
         }
     #endif
 
-    inline size_t CharStrlen(const char* p)
-    {
-        #ifdef _MSC_VER // VC++ can implement an instrinsic here.
-            return strlen(p);
-        #else
-            const char8_t* pCurrent = p;
-            while(*pCurrent)
-                ++pCurrent;
-            return (size_t)(pCurrent - p);
-        #endif
-    }
-
     inline size_t CharStrlen(const char8_t* p)
     {
         #ifdef _MSC_VER // VC++ can implement an instrinsic here.
-            return CharStrlen(reinterpret_cast<const char*>(p));
+            return strlen(p);
         #else
             const char8_t* pCurrent = p;
             while(*pCurrent)
@@ -3323,7 +3311,7 @@ namespace eastl
     inline bool operator==(const basic_string<T, Allocator>& a, const typename basic_string<T, Allocator>::value_type* p)
     {
         typedef typename basic_string<T, Allocator>::size_type size_type;
-        const size_type n = (size_type)CharStrlen(reinterpret_cast<const typename basic_string<T, Allocator>::value_type*>(p));
+        const size_type n = (size_type)CharStrlen(p);
         return ((a.size() == n) && (memcmp(a.data(), p, (size_t)n * sizeof(*p)) == 0));
     }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2005,2009-2010, 2013 Electronic Arts, Inc.  All rights reserved.
+Copyright (C) 2005,2009-2010 Electronic Arts, Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -880,7 +880,7 @@ namespace eastl
 
         for(size_t i = 0; i < NW; i++)
         {
-            #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) // GCC 3.4 or later
+            #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) && !defined(CS_UNDEFINED_STRING) && !defined(CS_UNDEFINED_STRING) // GCC 3.4 or later
                 #if(EA_PLATFORM_WORD_SIZE == 4)
                     n += (size_type)__builtin_popcountl(mWord[i]);
                 #else
@@ -1223,7 +1223,7 @@ namespace eastl
     inline typename BitsetBase<1, WordType>::size_type
     BitsetBase<1, WordType>::count() const
     {
-        #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) // GCC 3.4 or later
+        #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) && !defined(CS_UNDEFINED_STRING) && !defined(CS_UNDEFINED_STRING) // GCC 3.4 or later
             #if(EA_PLATFORM_WORD_SIZE == 4)
                 return (size_type)__builtin_popcountl(mWord[0]);
             #else
@@ -1510,7 +1510,7 @@ namespace eastl
     inline typename BitsetBase<2, WordType>::size_type
     BitsetBase<2, WordType>::count() const
     {
-        #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) // GCC 3.4 or later
+        #if defined(__GNUC__) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 304) && !defined(CS_UNDEFINED_STRING) && !defined(CS_UNDEFINED_STRING) // GCC 3.4 or later
             #if(EA_PLATFORM_WORD_SIZE == 4)
                 return (size_type)__builtin_popcountl(mWord[0])  + (size_type)__builtin_popcountl(mWord[1]);
             #else

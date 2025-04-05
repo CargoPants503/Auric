@@ -46,6 +46,11 @@ public:
         return ServerPlayerSetTeamIdHk(player, teamId);
     }
 
+    ServerGameContext* GetServerGameContext2()
+    {
+        return *reinterpret_cast<ServerGameContext**>(OFFSET_SERVERGAMECONTEXT_INSTANCE);
+    }
+
     __int64 GetServerGameContext()
     {
         return *reinterpret_cast<__int64*>(OFFSET_SERVERGAMECONTEXT_INSTANCE);
@@ -73,6 +78,7 @@ public:
 
     SocketManager* m_socketManager;
     ISocket* m_natClient; // ServerPlayerManager* m_playerManager;
+    EastlServerPlayerManager* m_eastlServerPlayerManager;
     ServerPlayerManager* m_ServerPlayerManager;
     ClientPlayerManager* m_ClientPlayerManager;
     ServerSpawnOverrides m_serverSpawnOverrides;
