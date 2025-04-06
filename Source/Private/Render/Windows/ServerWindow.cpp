@@ -177,20 +177,7 @@ void ServerWindow::Draw()
         
         if (serverPlayerManager != nullptr && g_program->m_clientState == ClientState_Ingame) // Is ServerPlayerManager
         {
-            //KYBER_LOG(LogLevel::Debug, "EASTLPlayerList: " << std::hex << reinterpret_cast<uintptr_t>(&playerList));
-            bool printOne = true;
-            if (printOne)
-            {
-                auto& playerList = g_program->m_server->GetServerGameContext2()->m_eastlServerPlayerManager->m_players;
-                KYBER_LOG(LogLevel::Debug, std::hex << reinterpret_cast<uintptr_t>(&playerList));
-                printOne = false;
-            }
-
-
-
-
-
-
+           
             std::map<int32_t, std::vector<ServerPlayer*>> players;
             // Bleh
             players[1] = std::vector<ServerPlayer*>();

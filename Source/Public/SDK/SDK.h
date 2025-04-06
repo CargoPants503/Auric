@@ -87,6 +87,14 @@ public:
     ServerPlayer* m_spectators[64];
     ServerPlayer* m_localPlayers[64];
 };
+class NetworkCreateJoiningPlayerMessage
+{
+public:
+    char pad_0000[72];
+    char* playerName;
+    bool isSpectator;
+};
+
 class ClientGameContext
 {
 public: 

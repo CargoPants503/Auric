@@ -32,6 +32,7 @@
 
 #define OFFSET_SERVERCONNECTION_DISCONNECT HOOK_OFFSET(0x143C772F0)
 #define OFFSET_SERVERCONNECTION_KICKPLAYER HOOK_OFFSET(0x143C7F140)
+#define OFFSET_SERVERCONNECTION_CREATEPLAYER HOOK_OFFSET(0x143C7FBA0)
 #define OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER HOOK_OFFSET(0x143CB1CB0)
 
 #define OFFSET_APPLY_SETTINGS HOOK_OFFSET(0x14334AE20)
@@ -42,20 +43,11 @@
 #define OFFSET_SERVER_PATCH2 HOOK_OFFSET(0x14450A9E0)
 
 #define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
-//#define OFFSET_CLIENTPLAYERMANAGER HOOK_OFFSET(0x143AC4250) //Created On Game Init -> Meaning cannot catch from when it's created
-
-// Testing Offsets
-
 #define OFFSET_SERVERSENDMESSAGE HOOK_OFFSET(0x144483EF0)
-//TL_DECLARE_FUNC(0x144483EF0, bool, SendServerMessage, ServerPlayer* player, ChatChannel channel, const char* message);
-//End Testing Offsets
+
 namespace Kyber
 {
-bool isServerPlayerManager = false;
-//Testing
-//using SendServerMessage_t = bool(*)(ServerPlayer* player, ChatChannel channel, const char* message);
-//inline SendServerMessage_t SendServerMessag2e = reinterpret_cast<SendServerMessage_t>(0x144483EF0);
-    //Testing End
+
 Server::Server()
     : m_socketSpawnInfo(SocketSpawnInfo(false, "", ""))
     , m_socketManager(new SocketManager(ProtocolDirection::Clientbound, SocketSpawnInfo(false, "", "")))
@@ -198,21 +190,32 @@ __int64 __fastcall ClientPlayerManagerHk(__int64 inst, __int64 playerData, unsig
     
     static const auto trampoline = HookManager::Call(ClientPlayerManagerHk);
     __int64 result = trampoline(inst, playerData, maxPlayerCount);
-    /*
-    if (true)
-    {
-        g_program->m_server->m_playerManager = reinterpret_cast<ServerPlayerManager*>(result);
-
-    }
-
-    if (reinterpret_cast<ServerPlayerManager*>(result))
-    {
-        KYBER_LOG(LogLevel::Debug, "ClientPlayerManager: 0x" << std::hex << reinterpret_cast<ServerPlayerManager*>(result));
-    }*/
     return result;
 }
 
+bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessage* message) 
+{
+    static const auto trampoline = HookManager::Call(ServerConnectionCreatePlayer);
 
+    std::string playerName = message->playerName;
+    bool TEMP_isJoiningPlayerNotASpectator = true;
+    if (playerName == "Nuuby4") 
+    {
+        TEMP_isJoiningPlayerNotASpectator = false;
+    }
+    if (TEMP_isJoiningPlayerNotASpectator)
+    {
+        KYBER_LOG(LogLevel::Info, message->playerName << " has joined.");
+        return trampoline(inst, message);
+
+    }
+    else{
+        message->isSpectator = true;
+        KYBER_LOG(LogLevel::Info, message->playerName << " has joined as Spectator.");
+        return trampoline(inst, message);
+    }
+        
+}
 
 
 __int64 SettingsManagerApplyHk(__int64 inst, __int64* a2, char* script, BYTE* a4)
@@ -349,7 +352,8 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_CLIENT_INIT_NETWORK, ClientInitNetworkHk },
     { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
     { OFFSET_SERVER_PATCH2, ServerPatch2Hk},
-    { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk}/*,
+    { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk},
+    { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer }/*,
     { OFFSET_CLIENTPLAYERMANAGER, ClientPlayerManagerHk}*/
     
 };
