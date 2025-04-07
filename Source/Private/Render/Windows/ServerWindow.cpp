@@ -149,12 +149,39 @@ void ServerWindow::Draw()
                 {
                     ServerLoadLevelStruct levelStruct;
                     const char* level= currentLevel.level;
-                    const char* gamdemode = currentMode.mode;
-                    levelStruct.level = currentLevel.level;
-                    levelStruct.gameMode = currentMode.mode;
+                    const char* gameMode = currentMode.mode;
+                    levelStruct.level = level;
+                    levelStruct.gameMode = gameMode;
 
                     g_program->m_server->LoadLevel(levelStruct);
+                    KYBER_LOG(LogLevel::Debug, "Loading Level with Level: " << level << " and GameMode: " << gameMode);
+                    gameSettings->Level = strdup(currentLevel.level);
+                    std::string modeString = std::string("GameMode=") + currentMode.mode;
+                    gameSettings->DefaultLayerInclusion = strdup(modeString.c_str());
+
+
                 }
+            }
+            if (ImGui::Button("Restart Level"))
+            {
+                ServerLoadLevelStruct levelStruct;
+                const char* level = gameSettings->Level;
+
+                const char* fullString = gameSettings->DefaultLayerInclusion;
+                const char* prefix = "GameMode=";
+                const char* gameMode = nullptr;
+
+                if (strncmp(fullString, prefix, strlen(prefix)) == 0)
+                {
+                    gameMode = fullString + strlen(prefix);
+                }
+
+                levelStruct.level = level;
+                levelStruct.gameMode = gameMode;
+
+                g_program->m_server->LoadLevel(levelStruct);
+                KYBER_LOG(LogLevel::Debug, "Restarting Level with Level: " << level << " and GameMode: " << gameMode);
+
             }
         }       
     }
