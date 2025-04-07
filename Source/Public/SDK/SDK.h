@@ -2,20 +2,25 @@
 
 #pragma once
 #include <Network/SocketManager.h>
-
-//#include <EASTL/string.h>
+#include <EASTL/string.h>
 #include <EASTL/fixed_vector.h>
 
 #include <stddef.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace Kyber
 {
-struct LevelSetup
+class LevelSetup
 {
-    std::string name;
+public:
+    void* vtable;
+    char pad_0010[8];
+    char* Name;
+    char pad_0018[200];
 };
+
 struct ServerSpawnOverrides
 {
     LevelSetup* levelSetup;
@@ -188,6 +193,13 @@ struct ServerSpawnInfo
     void* saveData;
     void* serverCallbacks = nullptr;
     void* runtimeModules = nullptr;
+};
+class ServerLoadLevelStruct
+{
+public:
+    char pad_0000[16];
+    const char* level;
+    const char* gameMode;
 };
 struct PlayerData2
 {

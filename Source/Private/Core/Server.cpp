@@ -45,6 +45,9 @@
 #define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
 #define OFFSET_SERVERSENDMESSAGE HOOK_OFFSET(0x144483EF0)
 
+#define OFFSET_LOADLEVEL HOOK_OFFSET(0x1445049A0)
+
+
 namespace Kyber
 {
 
@@ -59,7 +62,7 @@ Server::Server()
     , m_serverInstance(0)
     , m_isFirstLaunch(true)
 {
-    
+    //ConsoleInit();
     InitializeGameHooks();
     DisableGameHooks();
     InitializeGamePatches();
@@ -139,6 +142,7 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     
 }
+
 void Kyber::Server::ClientPlayerManagerCtr()
 {
     KYBER_LOG(LogLevel::Debug, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
@@ -147,6 +151,7 @@ void Kyber::Server::ClientPlayerManagerCtr()
 
     g_program->m_server->m_ClientPlayerManager = reinterpret_cast<ClientPlayerManager*>(playerManager);
 }
+
 __int64 ServerCtorHk(__int64 inst, ServerSpawnInfo& info, SocketManager* socketManager)
 {
     static const auto trampoline = HookManager::Call(ServerCtorHk);
@@ -158,8 +163,6 @@ __int64 ServerCtorHk(__int64 inst, ServerSpawnInfo& info, SocketManager* socketM
     return trampoline(inst, info, socketManager);
     ;
 }
-
-
 
 __int64 ServerStartHk(__int64 inst, ServerSpawnInfo* info, ServerSpawnOverrides* spawnOverrides)
 {
@@ -201,7 +204,7 @@ bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessag
     bool TEMP_isJoiningPlayerNotASpectator = true;
     if (playerName == "Nuuby4") 
     {
-        TEMP_isJoiningPlayerNotASpectator = false;
+        TEMP_isJoiningPlayerNotASpectator = true;
     }
     if (TEMP_isJoiningPlayerNotASpectator)
     {
@@ -261,13 +264,7 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
     }
 }
 
-void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerSetTeamIdHk);
-    g_program->m_server->InitializeGamePatches2();
 
-    trampoline(inst, teamId);
-}
 
 void ServerPlayerLeaveIngameHk(ServerPlayer* inst)
 {
@@ -303,28 +300,6 @@ void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText
     trampoline(inst, reason, reasonText);
 }
 
-void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText)
-{
-    static const auto trampoline = HookManager::Call(ServerConnectionKickPlayerHk);
-    KYBER_LOG(LogLevel::Debug, "ServerConnectionKickPlayer called 0x" << reason << " " << reasonText.c_str());
-    trampoline(inst, reason, reasonText.c_str());
-}
-
-void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message)
-{
-    static const auto trampoline = HookManager::Call(SendServerMessageHk);
-
-
-
-    if (!(message && inst))
-    {
-        return;
-    }
-
-    KYBER_LOG(LogLevel::Debug, " a1: " << inst << " channel: " << channel << " message: " << message);
-
-    return trampoline(inst, channel, message);
-}
 __int64 ServerPatch2Hk(__int64 inst) {
     return 3;
 }
@@ -336,6 +311,39 @@ void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* 
     trampoline(inst, player);
 }
 
+void LoadLevelHk(ServerLoadLevelStruct a1)
+{
+    static const auto trampoline = HookManager::Call(LoadLevelHk);
+    trampoline(a1);
+}
+
+void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
+{
+    static const auto trampoline = HookManager::Call(ServerPlayerSetTeamIdHk);
+    // g_program->m_server->InitializeGamePatches2();
+    KYBER_LOG(LogLevel::Debug, "Set " << std::string(inst->m_name) << "To Team " << teamId);
+    trampoline(inst, teamId);
+}
+void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText)
+{
+    static const auto trampoline = HookManager::Call(ServerConnectionKickPlayerHk);
+    KYBER_LOG(LogLevel::Debug, "ServerConnectionKickPlayer called 0x" << reason << " " << reasonText.c_str());
+    
+    trampoline(inst, reason, reasonText.c_str());
+}
+void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message)
+{
+    static const auto trampoline = HookManager::Call(SendServerMessageHk);
+
+    if (!(message && inst))
+    {
+        return;
+    }
+
+    KYBER_LOG(LogLevel::Debug, " a1: " << inst << " channel: " << channel << " message: " << message);
+
+    return trampoline(inst, channel, message);
+}
 HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
     { OFFSET_SERVER_START, ServerStartHk },
@@ -353,10 +361,19 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
     { OFFSET_SERVER_PATCH2, ServerPatch2Hk},
     { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk},
-    { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer }/*,
+    { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
+    { OFFSET_LOADLEVEL, LoadLevelHk}
+    
+    
+    /*,
     { OFFSET_CLIENTPLAYERMANAGER, ClientPlayerManagerHk}*/
     
 };
+
+
+
+
+
 
 void Server::InitializeGameHooks()
 {

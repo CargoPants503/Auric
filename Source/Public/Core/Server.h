@@ -11,8 +11,11 @@
 
 #define OFFSET_SERVERGAMECONTEXT_INSTANCE 0x142C20A00
 
+#define OFFSET_NETWORK_THING 0x142FBF790
+
 namespace Kyber
 {
+
 void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId);
 void ServerPlayerLeaveIngameHk(ServerPlayer* inst);
 void ServerPlayerDisconnectHk(ServerPlayer* inst, __int64 reason, const std::string& reasonText);
@@ -23,6 +26,10 @@ void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::strin
 void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message);
 void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player);
 void CreatePlayerManager();
+void LoadLevelHk(ServerLoadLevelStruct a1);
+
+
+
 
 class Server
 {
@@ -34,11 +41,12 @@ public:
     void InitializeGameHooks();
     void EnableGameHooks();
     void DisableGameHooks();
+    //void ConsoleInit();
     void InitializeGamePatches();
     void InitializeGamePatches2();
     void InitializeGameSettings();
     void ClientPlayerManagerCtr();
-    void Start(const char* level, const char* mode, int maxPlayers /* SocketSpawnInfo info*/);
+    void Start(const char* level, const char* mode, int maxPlayers);
     void Stop();
 
     void SetPlayerTeam(ServerPlayer* player, int teamId)
@@ -67,6 +75,7 @@ public:
     {
         std::string message = std::string(name) + " WAS KICKED BY ADMIN";
         SendServerMessageHk(inst, ChatChannel_Game, message.c_str());
+
     }
 
     void BanPlayer(ServerPlayer* player, char* reason)
@@ -75,6 +84,11 @@ public:
         __int64 serverConnection = ServerPeerConnectionForPlayerHk(serverPeer, player);
         ServerConnectionKickPlayerHk(serverConnection, SecureReason_KickedViaShield, std::string(reason));
     }
+    void LoadLevel(ServerLoadLevelStruct a1)
+    {
+        LoadLevelHk(a1);
+    }
+
 
     SocketManager* m_socketManager;
     ISocket* m_natClient; // ServerPlayerManager* m_playerManager;

@@ -62,16 +62,12 @@ void ServerWindow::Draw()
     ImGui::Text("LEVEL:");
     ImGui::SameLine();
     ImGui::Text(gameSettings->Level);
-
     ImGui::Separator();
 
-    //Cannot change the level while in a level unfortuntately. Looking for fixes
-
-    if (!g_program->m_server->m_running)
+    if (g_program->m_clientState == 12 || g_program->m_server->m_isFirstLaunch)
     {
         static GameMode currentMode = { "", "Mode", {}, {} };
         static GameLevel currentLevel = { "", "Level" };
-        //static KyberProxy currentProxy = m_proxies->at(0);
         if (ImGui::BeginCombo("##modeCombo", currentMode.name))
         {
             for (int n = 0; n < IM_ARRAYSIZE(s_game_modes); n++)
@@ -106,71 +102,66 @@ void ServerWindow::Draw()
             }
             ImGui::EndCombo();
         }
-        static int maxPlayers = 40;
-        ImGui::SliderInt("Max Players", &maxPlayers, 2, 64);
-        if (ImGui::IsItemHovered())
+        if (!g_program->m_server->m_running ||  gameSettings->Level == "Levels/FrontEnd/Frontend")
         {
-            ImGui::BeginTooltip();
-            ImGui::Text("When you use a Kyber Proxy, your server");
-            ImGui::Text("will be displayed on the server browser,");
-            ImGui::Text("and client/host IPs will be hidden.\n\n");
-            ImGui::Text("When you don't use a Kyber Proxy, you will");
-            ImGui::Text("need to Port Forward port 25200 in your router");
-            ImGui::Text("and have players connect to your IP directly.");
-            ImGui::Text("Mod verification is not supported when not using a proxy.");
-            ImGui::EndTooltip();
-        }
-        
-        static int errorTime = 0;
-        if (ImGui::Button("Start Server"))
-        {
-            if (strcmp(currentMode.name, "Mode") != 0 && strcmp(currentLevel.name, "Level") != 0)
-            {
-                g_program->m_server->Start(currentLevel.level, currentMode.mode, maxPlayers);
-            }
-            else
-            {
-                errorTime = 1000;
-            }
-        }
-        if (errorTime > 0)
-        {
+            static int maxPlayers = 40;
+            ImGui::SliderInt("Max Players", &maxPlayers, 2, 64);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
-                ImGui::Text("Please select a game mode and level.");
+                ImGui::Text("When you use a Kyber Proxy, your server");
+                ImGui::Text("will be displayed on the server browser,");
+                ImGui::Text("and client/host IPs will be hidden.\n\n");
+                ImGui::Text("When you don't use a Kyber Proxy, you will");
+                ImGui::Text("need to Port Forward port 25200 in your router");
+                ImGui::Text("and have players connect to your IP directly.");
+                ImGui::Text("Mod verification is not supported when not using a proxy.");
                 ImGui::EndTooltip();
             }
-            errorTime--;
+            static int errorTime = 0;
+            if (ImGui::Button("Start Server"))
+            {
+                if (strcmp(currentMode.name, "Mode") != 0 && strcmp(currentLevel.name, "Level") != 0)
+                {
+                    g_program->m_server->Start(currentLevel.level, currentMode.mode, maxPlayers);
+                }
+                else
+                {
+                    errorTime = 1000;
+                }
+            }
+            if (errorTime > 0)
+            {
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::Text("Please select a game mode and level.");
+                    ImGui::EndTooltip();
+                }
+                errorTime--;
+            }
         }
+        else
+        {
+            if (ImGui::Button("Load New Level"))
+            {
+                if (strcmp(currentMode.name, "Mode") != 0 && strcmp(currentLevel.name, "Level") != 0)
+                {
+                    ServerLoadLevelStruct levelStruct;
+                    const char* level= currentLevel.level;
+                    const char* gamdemode = currentMode.mode;
+                    levelStruct.level = currentLevel.level;
+                    levelStruct.gameMode = currentMode.mode;
+
+                    g_program->m_server->LoadLevel(levelStruct);
+                }
+            }
+        }       
     }
     if (g_program->m_clientState) // default: else if
     {
-        // ImGui::Text("The server host will need a mod to start the game");
-        // ImGui::Text("Find it on github.com/CargoPants503/Auric/releases/tag/auricv1.0");
-        // ImGui::Text("If the game hasn't started, a mod might be overriding the file!");
-        ImGui::Text("Leave this game to start a new one.");
-        ImGui::Separator();
-        // AutoPlayerSettings* aiSettings = Settings<AutoPlayerSettings>("AutoPlayers");
-
-        // if (ImGui::Button("START GAME"))
-        //{
-        //  These bots don't actually exist, it just tricks the server into thinking they do.
-        // aiSettings->ForceFillGameplayBotsTeam1 = 20;
-        // aiSettings->ForceFillGameplayBotsTeam2 = 19;
-        //}
-        ImGui::Separator();
-        // ImGui::Text("AI SETTINGS");
-        // ImGui::SliderInt("AI COUNT", &aiSettings->ForcedServerAutoPlayerCount, -1, 64);
-        // ImGui::Checkbox("UPDATE AI", &aiSettings->UpdateAI);
-        ImGui::SameLine();
-        // ImGui::Checkbox("AI IGNORE PLAYERS", &aiSettings->ServerPlayersIgnoreClientPlayers);
-        // ImGui::Checkbox("AUTO BALANCE TEAMS", &Settings<WSGameSettings>("Whiteshark")->AutoBalanceTeamsOnNeutral);
         ImGui::Separator();
         ImGui::Text("PLAYER LIST");
-
-        
-        //auto* playerList = g_program->m_server->GetServerGameContext2()->m_eastlServerPlayerManager->m_players;
 
         ServerPlayerManager* serverPlayerManager = g_program->m_server->m_ServerPlayerManager;
         ClientPlayerManager* clientPlayerManager = g_program->m_server->m_ClientPlayerManager;
