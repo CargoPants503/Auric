@@ -15,7 +15,6 @@
 namespace Kyber
 {
 ServerWindow::ServerWindow() {
-
 }
 
 bool ServerWindow::IsEnabled()
@@ -63,6 +62,47 @@ void ServerWindow::Draw()
     ImGui::SameLine();
     ImGui::Text(gameSettings->Level);
     ImGui::Separator();
+
+    ImGui::Text("----- Map Rotation ----- ");
+
+    auto& mapList = g_program->m_server->m_mapList;
+
+    if (mapList.empty())
+    {
+        ImGui::Text("No Maps in Map Rotation. Start a Server to begin adding.");
+    }
+    else
+    {
+        for (int i = 0; i < mapList.size(); ++i)
+        {
+            MapRotation* map = mapList[i];
+
+            // Text and buttons on the same line
+            ImGui::Text("Map: %s | Mode: %s", map->Name, map->GameMode);
+            ImGui::SameLine(450);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+            if (ImGui::Button(("UP##" + std::to_string(i)).c_str()) && i > 0)
+            {
+                std::swap(mapList[i], mapList[i - 1]);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(("DOWN##" + std::to_string(i)).c_str()) && i < mapList.size() - 1)
+            {
+                std::swap(mapList[i], mapList[i + 1]);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(("X##" + std::to_string(i)).c_str()))
+            {
+                delete mapList[i];
+                mapList.erase(mapList.begin() + i);
+                --i;
+            }
+
+            ImGui::PopStyleVar();
+        }
+    }
+
+
 
     if (g_program->m_clientState == 12 || g_program->m_server->m_isFirstLaunch)
     {
@@ -161,6 +201,11 @@ void ServerWindow::Draw()
 
 
                 }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Add to Map Rotation"))
+            {
+                g_program->m_server->m_mapList.push_back(new MapRotation{ currentLevel.level, currentMode.mode, currentLevel.name });
             }
             if (ImGui::Button("Restart Level"))
             {

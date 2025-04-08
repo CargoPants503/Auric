@@ -31,6 +31,7 @@ void LoadLevelHk(ServerLoadLevelStruct a1);
 
 
 
+
 class Server
 {
 public:
@@ -89,6 +90,8 @@ public:
         LoadLevelHk(a1);
     }
 
+    
+
 
     SocketManager* m_socketManager;
     ISocket* m_natClient; // ServerPlayerManager* m_playerManager;
@@ -97,6 +100,7 @@ public:
     ClientPlayerManager* m_ClientPlayerManager;
     ServerSpawnOverrides m_serverSpawnOverrides;
     SocketSpawnInfo m_socketSpawnInfo;
+    std::vector<MapRotation*> m_mapList;
     __int64 m_serverInstance;
     bool m_running;
     bool m_hooksRemoved;

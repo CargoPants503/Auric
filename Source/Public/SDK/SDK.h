@@ -45,7 +45,6 @@ public:
 }; // Size: 0x024C
 
 
-
 class EastlServerPlayerManager
 {
 public:
@@ -100,6 +99,106 @@ public:
     bool isSpectator;
 };
 
+
+//All credit for TypeInfo goes to BattleDash
+enum TypeCodeEnum : uint16_t
+{
+    kTypeCode_Void = 0,
+    kTypeCode_DbObject = 1,
+    kTypeCode_ValueType = 2,
+    kTypeCode_Class = 3,
+    kTypeCode_Array = 4,
+    kTypeCode_CString = 7,
+    kTypeCode_Enum = 8,
+    kTypeCode_Boolean = 10,
+    kTypeCode_Int8 = 11,
+    kTypeCode_Uint8 = 12,
+    kTypeCode_Int16 = 13,
+    kTypeCode_Uint16 = 14,
+    kTypeCode_Int32 = 15,
+    kTypeCode_Uint32 = 16,
+    kTypeCode_Int64 = 17,
+    kTypeCode_Uint64 = 18,
+    kTypeCode_Float32 = 19,
+    kTypeCode_Float64 = 20,
+};
+// All credit for TypeInfo goes to BattleDash
+struct TypeObject
+{
+    virtual class TypeInfo* getType() const = 0;
+
+protected:
+    virtual ~TypeObject() = default;
+};
+// All credit for TypeInfo goes to BattleDash
+class MemberInfoData
+{
+public:
+    char* name;     // 0x0000
+    uint16_t flags; // 0x0008
+
+    static const uint32_t kFlagIsBlittable = 1 << 15;
+
+    bool IsBlittable() const
+    {
+        return (flags & kFlagIsBlittable) == kFlagIsBlittable;
+    }
+}; // Size: 0x000A
+// All credit for TypeInfo goes to BattleDash
+class TestList
+{
+public:
+    char pad_0000[136]; // 0x0000
+};
+// All credit for TypeInfo goes to BattleDash
+class ModuleInfo
+{
+public:
+    char* moduleName;             // 0x0000
+    class ModuleInfo* nextModule; // 0x0008
+    class TestList* testList;     // 0x0010
+};
+// All credit for TypeInfo goes to BattleDash
+class TypeInfoData : public MemberInfoData
+{
+public:
+    uint16_t totalSize;            // 0x000A
+    uint32_t guid;                 // 0x000C
+    class ModuleInfo* module;      // 0x0010
+    class TypeInfo* arrayTypeInfo; // 0x0018
+    uint16_t alignment;            // 0x0020
+    uint16_t fieldCount;           // 0x0022
+    uint32_t signature;            // 0x0024
+};
+// All credit for TypeInfo goes to BattleDash
+class TypeInfo
+{
+public:
+    class TypeInfoData* typeInfoData; // 0x0000
+    TypeInfo* next;
+
+    char pad[0x28];
+    // ClassInfo ONLY
+    const TypeInfo* m_super;
+    const TypeObject* m_defaultInstance;
+    uint16_t m_classId;
+    uint16_t m_lastClassId;
+    // End - ClassInfo ONLY
+
+    TypeCodeEnum getBasicType() const;
+    const char* getName() const;
+
+    //std::string toString(const void* data) const;
+
+    //bool isKindOf(const TypeInfo* other) const;
+}; // Size: 0x0008
+// All credit for TypeInfo goes to BattleDash
+class Message : public TypeObject
+{
+public:
+    const int category;
+    const int type;
+};
 class ClientGameContext
 {
 public: 
@@ -223,6 +322,12 @@ struct SocketSpawnInfo
     const char* serverMode;
     const char* serverLevel;
 };
-
+struct MapRotation
+{
+public:
+    const char* Level;
+    const char* GameMode;
+    const char* Name;
+};
 
 } // namespace Kyber

@@ -4,6 +4,7 @@
 #include <Core/Server.h>
 
 #include <Core/Program.h>
+//#include <Render/Windows/ServerWindow.h>
 #include <Hook/HookManager.h>
 #include <Base/Log.h>
 #include <Utilities/ErrorUtils.h>
@@ -46,11 +47,23 @@
 #define OFFSET_SERVERSENDMESSAGE HOOK_OFFSET(0x144483EF0)
 
 #define OFFSET_LOADLEVEL HOOK_OFFSET(0x1445049A0)
+#define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
 
+// 1432F28D3 for multiple instances
 
 namespace Kyber
 {
 
+
+TypeCodeEnum TypeInfo::getBasicType() const
+{
+    return TypeCodeEnum((typeInfoData->flags >> 5) & 31);
+}
+
+const char* TypeInfo::getName() const
+{
+    return typeInfoData->name;
+}
 Server::Server()
     : m_socketSpawnInfo(SocketSpawnInfo(false, "", ""))
     , m_socketManager(new SocketManager(ProtocolDirection::Clientbound, SocketSpawnInfo(false, "", "")))
@@ -142,7 +155,57 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     
 }
+void MessageManagerDispatchMessageHk(void* inst, Message* message) 
+{
+    static const auto trampoline = HookManager::Call(MessageManagerDispatchMessageHk);
+    if (message == nullptr)
+    {
+        return;
+    }
+    TypeInfo* type = message->getType();
+    if (type == nullptr || type->typeInfoData == nullptr)
+    {
+        trampoline(inst, message);
+        return; 
+    }
+    if (type && type->typeInfoData && strcmp(type->getName(), "NetworkCreatePlayerMessage") == 0)
+    {
+        NetworkCreateJoiningPlayerMessage* msg = (NetworkCreateJoiningPlayerMessage*)message;
+        msg->isSpectator = false;
+    }
+    std::string name = type->getName();
+    
+    if (name == "ServerLevelCompletedMessage")
+    {
+        KYBER_LOG(LogLevel::Info, "Game ended, moving to next level");
 
+        //Lol this is a lot
+        auto& mapList = g_program->m_server->m_mapList;
+        if (!mapList.empty())
+        {
+            GameSettings* gameSettings = Settings<GameSettings>("Game");
+            MapRotation* map = mapList[0];
+            ServerLoadLevelStruct loadLevelStruct;
+            loadLevelStruct.level = map->Level;
+            loadLevelStruct.gameMode = map->GameMode;
+            LoadLevelHk(loadLevelStruct);
+            gameSettings->Level = strdup(map->Level);
+            gameSettings->DefaultLayerInclusion = strdup((std::string("GameMode=") + map->GameMode).c_str());
+            delete map;
+            mapList.erase(mapList.begin());
+        }
+        else {
+            GameSettings* gameSettings = Settings<GameSettings>("Game");
+            ServerLoadLevelStruct loadLevelStruct;
+            loadLevelStruct.level = gameSettings->Level;
+            loadLevelStruct.gameMode = gameSettings->DefaultLayerInclusion;
+            LoadLevelHk(loadLevelStruct);
+        }
+
+    }
+    //KYBER_LOG(LogLevel::Debug, "Message:" + name);
+    trampoline(inst, message);
+}
 void Kyber::Server::ClientPlayerManagerCtr()
 {
     KYBER_LOG(LogLevel::Debug, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
@@ -194,6 +257,21 @@ __int64 __fastcall ClientPlayerManagerHk(__int64 inst, __int64 playerData, unsig
     static const auto trampoline = HookManager::Call(ClientPlayerManagerHk);
     __int64 result = trampoline(inst, playerData, maxPlayerCount);
     return result;
+}
+
+void ClientConnectionSendMessageHk(void* inst, Message* message)
+{
+    static const auto trampoline = HookManager::Call(ClientConnectionSendMessageHk);
+    if (message)
+    {
+        TypeInfo* type = message->getType();
+        if (type && type->typeInfoData && strcmp(type->getName(), "NetworkCreatePlayerMessage") == 0)
+        {
+            NetworkCreateJoiningPlayerMessage* msg = (NetworkCreateJoiningPlayerMessage*)message;
+            msg->isSpectator = false;
+        }
+    }
+    trampoline(inst, message);
 }
 
 bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessage* message) 
@@ -362,7 +440,8 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_PATCH2, ServerPatch2Hk},
     { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk},
     { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
-    { OFFSET_LOADLEVEL, LoadLevelHk}
+    { OFFSET_LOADLEVEL, LoadLevelHk},
+    { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk }
     
     
     /*,
