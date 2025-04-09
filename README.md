@@ -15,8 +15,7 @@
 
 ------
 
-Auric does not yet have proxy support. The current version relies on Port Forwarding. To make a server joinable, you'll need to open a port through 25200 on your router and share your personal IP (be careful!).
-
+Auric does not have proxy support **yet**. The current version relies on Port Forwarding. To make a server joinable, you'll need to open a port through 25200 on your router and share your personal IP (be careful!).
 
 
 
@@ -26,11 +25,14 @@ What's done:
 * NAT Punch-Through system
 * Player kicking/moderation
 * Per-player team swapping
+* Spectating Games (WIP)
+* Load Levels Anytime
+* Dynamic Map Rotation
 
 What isn't done:
-* Direct proxy support
-* In-Game server browser
-* Optimal proxy detection
+* Direct proxy support (Everything proxy related is a work in Progress. Nothing's in public builds yet either.)
+* In-Game server browser (WIP)
+* Optimal proxy detection (WIP)
 * UX/UI Styling (WIP)
 * Player banning (WIP)
 * Database handling at the proxy level
@@ -39,11 +41,12 @@ What isn't done:
 
 ## Credits
 
-* CargoPants - Responsible for the rewrite to port to 2015 Battlefront & Server Mods
-* BattleDash - Original Source Code and help debugging
+* CargoPants - Responsible for the rewrite and a majority of the **new** code, everything else
+* BattleDash - Original Source Code, Kyber V2 offsets (God Send), Debugging, Advice
 * Andersson799 - Server Crash Fix for MP Inclusion Options, SetTeamId Offset
-* Kape1223 - UI/Art, Testing
-* Lucapook - Future videos, Testing
+* Kape1223 - UI/Art, Trailer Contributor, Testing
+* Lucapook - Trailer Contributor Testing
+* ESS83 - Trailer Contributor
 * Any/All contributors to Kyber's source code
 
 Auric utilizes the following open-source projects:
@@ -55,3 +58,4 @@ Auric utilizes the following open-source projects:
 - [openssl](https://openssl.org)
 - [executors](https://github.com/chriskohlhoff/executors)
 - [nlohmann-json](https://github.com/nlohmann/json)
+- [EASTL](https://github.com/electronicarts/EASTL)
