@@ -7,7 +7,7 @@
 </h4>
 <br>
 <p align="center">
-  <a href="https://discord.gg/auric">
+  <a href="https://discord.gg/43qqPMyNVJ">
       <img src="https://img.shields.io/discord/1318049974281441301.svg?label=Discord&logo=discord&color=778cd4">
   </a>
   
