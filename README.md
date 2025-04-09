@@ -8,7 +8,7 @@
 <br>
 <p align="center">
   <a href="https://discord.gg/auric">
-      <img src="https://img.shields.io/discord/305338604316655616.svg?label=Discord&logo=discord&color=778cd4">
+      <img src="https://img.shields.io/discord/1318049974281441301.svg?label=Discord&logo=discord&color=778cd4">
   </a>
   
 </p>
