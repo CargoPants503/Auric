@@ -45,8 +45,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DLL
-          path: D:/a/Auric/Auric/Auric/build/Auric.dll
-
+          path: D:/a/Auric/Auric/Auric/build/Kyber.dll
+          
       - name: Upload Launcher
         uses: actions/upload-artifact@v4
         with:
@@ -57,4 +57,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Installer
-          path: D:/a/Auric/Auric/Auric/build/Installer/AuricInstaller.exe
+          path: D:/a/Auric/Auric/Auric/build/Installer/KyberInstaller.exe
