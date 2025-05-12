@@ -1,0 +1,60 @@
+name: Build Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Visual Studio Build Tools
+        shell: pwsh
+        run: |
+          $vsInstallerUrl = "https://aka.ms/vs/17/release/vs_BuildTools.exe"
+          $vsInstallerPath = "$env:RUNNER_TEMP\vs_BuildTools.exe"
+          $installDir = "C:\MyVS"
+
+          Invoke-WebRequest $vsInstallerUrl -OutFile $vsInstallerPath
+
+          Start-Process -Wait -FilePath $vsInstallerPath -ArgumentList `
+            "--installPath `"$installDir`"", `
+            "--add Microsoft.VisualStudio.Workload.VCTools", `
+            "--includeRecommended", `
+            "--passive", "--norestart", "--wait"
+
+      - name: Setup MSVC Environment
+        shell: cmd
+        run: |
+          call "C:\MyVS\VC\Auxiliary\Build\vcvars64.bat"
+
+      - name: Clone Auric
+        run: git clone https://github.com/CargoPants503/Auric.git
+
+      - name: Build
+        shell: cmd
+        run: |
+          call "C:\MyVS\VC\Auxiliary\Build\vcvars64.bat"
+          cmake -S Auric\ -B Auric\build -G "NMake Makefiles"
+          cmake --build Auric\build --config Release
+
+      - name: Upload Dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: DLL
+          path: D:/a/Auric/Auric/Auric/build/Auric.dll
+
+      - name: Upload Launcher
+        uses: actions/upload-artifact@v4
+        with:
+          name: Launcher
+          path: D:/a/Auric/Auric/Auric/build/Launcher/AuricLauncher.exe
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Installer
+          path: D:/a/Auric/Auric/Auric/build/Installer/AuricInstaller.exe
