@@ -1,7 +1,7 @@
 > [!NOTE]
 > AURIC is not affiliated with KYBER for Star Wars Battlefrot II (2017). However AURIC's source code is based on KYBER. For information on KYBER please visit [their website](https://uplink.kyber.gg/news/features-overview/).
 
-<h1 align="center"><img src="https://kyber.gg/logo2.svg" width="30rem"> AURIC</h1>
+<h1 align="center"><img src="/Launcher/Libraries/Images/Logo1.ico" width="30rem"> AURIC</h1>
 
 <h4 align="center">Auric is an Open-Source Private Server tool for STAR WARS™ Battlefront™ (2015).
 </h4>
