@@ -11,7 +11,6 @@
 #include <Hook/HookManager.h>
 #include <SDK/SDK.h>
 #include <Network/SocketManager.h>
-
 #include <MinHook/MinHook.h>
 
 #include <Windows.h>
@@ -83,7 +82,6 @@ DWORD WINAPI Program::InitializationThread()
     g_renderer = new Renderer();
     m_server = new Server();
     m_server->ClientPlayerManagerCtr();
-
     KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);
     KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Auric!");
 
@@ -98,7 +96,7 @@ DWORD WINAPI Program::InitializationThread()
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-
+    
     return 0;
 }
 
@@ -115,6 +113,7 @@ void Program::InitializeGameHooks()
         HookManager::CreateHook(hook.offset, hook.hook);
     }
     Hook::ApplyQueuedActions();
+    
 }
 
 __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, ClientState lastClientState)

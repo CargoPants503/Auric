@@ -3,9 +3,112 @@
 #pragma once
 
 #include <stddef.h>
+#include <xmmintrin.h>
 
 namespace Kyber
 {
+struct Color32
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+
+    Color32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+        : r(r)
+        , g(g)
+        , b(b)
+        , a(a)
+    {}
+};
+struct Vec2
+{
+    constexpr Vec2()
+        : x(0.0f)
+        , y(0.0f)
+    {}
+
+    constexpr Vec2(float _x, float _y)
+        : x(_x)
+        , y(_y)
+    {}
+
+    float x, y;
+};
+struct Vec3
+{
+    Vec3()
+        : x(0)
+        , y(0)
+        , z(0)
+    {}
+
+    Vec3(float x, float y, float z)
+        : x(x)
+        , y(y)
+        , z(z)
+    {}
+
+    Vec3 operator+(const Vec3& other) const
+    {
+        return Vec3(x + other.x, y + other.y, z + other.z);
+    }
+
+    Vec3 operator-(const Vec3& other) const
+    {
+        return Vec3(x - other.x, y - other.y, z - other.z);
+    }
+
+    Vec3 operator*(const Vec3& other) const
+    {
+        return Vec3(x * other.x, y * other.y, z * other.z);
+    }
+
+    Vec3 operator*(float scalar) const
+    {
+        return Vec3(x * scalar, y * scalar, z * scalar);
+    }
+
+    union
+    {
+        struct
+        {
+            float x, y, z;
+            char _0x000C[4]; // 0x000C
+        };
+
+        __m128 simd;
+    };
+
+    std::string ToString() const
+    {
+        return "{" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "}";
+    }
+};
+struct Tuple3f
+{
+    float x, y, z;
+};
+struct Tuple2f
+{
+    float x, y;
+};
+struct DebugRenderVertex
+{
+    Tuple3f pos;
+    Color32 color;
+    Tuple3f normal;
+    uint32_t pad;
+};
+enum DebugGeometryType
+{
+    DebugGeometryType_Triangle3d,
+    DebugGeometryType_Line3d,
+    DebugGeometryType_Triangle2d,
+    DebugGeometryType_Line2d,
+    DebugGeometryType_Font2d,
+    DebugGeometryType_TriangleStrip
+};
 enum ClientState
 {
     ClientState_WaitingForStaticBundleLoad, // 0

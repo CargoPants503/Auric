@@ -44,6 +44,7 @@ public:
     Server* m_server;
     ClientState m_clientState;
     bool m_joining;
+
 };
 
 template<class T>

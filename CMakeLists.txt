@@ -28,7 +28,7 @@ file(GLOB_RECURSE INCLUDE_SOURCES CONFIGURE_DEPENDS
 # Begone
 add_compile_definitions(_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
-add_library(Kyber MODULE ${DLL_SOURCES} ${INCLUDE_SOURCES})
+add_library(Kyber MODULE ${DLL_SOURCES} ${INCLUDE_SOURCES} "Source/Public/Core/DebugRenderer.h" "Source/Public/Hook/Func.h" "Source/Private/Core/DebugRenderer.cpp")
 
 file(GLOB_RECURSE LIBRARIES CONFIGURE_DEPENDS
         ${PROJECT_SOURCE_DIR}/Libraries/Binaries/*.lib

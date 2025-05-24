@@ -10,7 +10,6 @@
 #include <Utilities/ErrorUtils.h>
 #include <Utilities/MemoryUtils.h>
 #include <Utilities/PlatformUtils.h>
-
 #include <SDK/TypeInfo.h>
 #include <SDK/SDK.h>
 
@@ -379,6 +378,7 @@ void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText
 }
 
 __int64 ServerPatch2Hk(__int64 inst) {
+
     return 3;
 }
 

@@ -7,6 +7,7 @@
 #include <Render/Windows/MainWindow.h>
 #include <Utilities/ErrorUtils.h>
 #include <SDK/Modes.h>
+#include <Core/DebugRenderer.h>
 
 #include <Windows.h>
 #include <chrono>
@@ -118,6 +119,19 @@ void ServerSettingsWindow::Draw()
         }
         ImGui::SameLine(350);
         ImGui::Text("Applies On Spawned");
+        if (ImGui::Button(Kyber::IsDebugEnabled() ? "Visual Debug ON" : "Visual Debug OFF"))
+        {
+            if (Kyber::IsDebugEnabled())
+            {
+                Kyber::SetDebugEnabled(false);
+
+            }
+            else
+            {
+                Kyber::SetDebugEnabled(true);
+
+            }
+        }
 
         /*
         if (ImGui::Button(HavokVisualDebugger ? "Havok: TRUE" : "Havok: FALSE")) // Only Applies on Player Respawned

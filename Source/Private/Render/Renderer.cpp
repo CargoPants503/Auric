@@ -17,6 +17,8 @@
 #include <Windows.h>
 #include <winuser.h>
 #include <typeinfo>
+#include <Core/DebugRenderer.h>
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -244,6 +246,11 @@ HRESULT PresentHk(IDXGISwapChain* pInstance, UINT syncInterval, UINT flags)
     ImGui::Render();
     g_renderer->m_currentContext->OMSetRenderTargets(1, &g_renderer->m_currentView, NULL);
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+    Kyber::DebugRenderer::RenderDebug();
+    
+    
+
 
     return trampoline(pInstance, syncInterval, flags);
 }
