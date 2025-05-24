@@ -1,7 +1,7 @@
 > [!NOTE]
 > AURIC is not affiliated with KYBER for Star Wars Battlefrot II (2017). However AURIC's source code is based on KYBER. For information on KYBER please visit [their website](https://uplink.kyber.gg/news/features-overview/).
 
-<h1 align="center"><img src="https://kyber.gg/logo2.svg" width="30rem"> AURIC</h1>
+<h1 align="center"><img src="https://raw.githubusercontent.com/CargoPants503/Auric/refs/heads/main/Launcher/Libraries/Images/Logo1.ico" width="30rem"> AURIC</h1>
 
 <h4 align="center">Auric is an Open-Source Private Server tool for STAR WARS™ Battlefront™ (2015).
 </h4>
@@ -41,8 +41,8 @@ What isn't done:
 
 ## Credits
 
-* CargoPants - Responsible for the rewrite and a majority of the **new** code, everything else
-* BattleDash - Original Source Code, Kyber V2 offsets (God Send), Debugging, Advice
+* Nuuby - Responsible for the rewrite and a majority of the **new** code, everything else
+* BattleDash - Original Source Code, Kyber V2 offsets (God Send), debugging, advice, etc, etc
 * Andersson799 - Server Crash Fix for MP Inclusion Options, SetTeamId Offset
 * Kape1223 - UI/Art, Trailer Contributor, Testing
 * Lucapook - Trailer Contributor Testing
