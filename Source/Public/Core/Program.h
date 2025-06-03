@@ -16,6 +16,7 @@ namespace Kyber
 {
 __int64 ClientStateChangeHk(__int64 a1, ClientState currentClientState, ClientState lastClientState);
 __int64 GetSettingsObjectHk(__int64 inst, const char* identifier);
+__int64 LookupSettingsObjectHk(__int64 inst, __int64 typeInfo);
 
 class Program
 {
@@ -31,6 +32,13 @@ public:
     {
         return reinterpret_cast<T*>(GetSettingsObjectHk(*reinterpret_cast<__int64*>(OFFSET_GLOBAL_SETTINGS_MANAGER), identifier));
     }
+
+    template<typename T>
+    T* LookupSettingsObject(__int64 typeInfo)
+    {
+        return reinterpret_cast<T*>(LookupSettingsObjectHk(*reinterpret_cast<__int64*>(OFFSET_GLOBAL_SETTINGS_MANAGER), typeInfo));
+    }
+
 
     __int64 ChangeClientState(ClientState currentClientState)
     {
@@ -54,6 +62,35 @@ public:
     Settings(const char* identifier)
     {
         m_settings = g_program->GetSettingsObject<T>(identifier);
+    }
+
+    inline T* operator->()
+    {
+        return m_settings;
+    }
+    inline const T* operator->() const
+    {
+        return m_settings;
+    }
+    inline operator T*()
+    {
+        return m_settings;
+    }
+    inline operator const T*() const
+    {
+        return m_settings;
+    }
+
+private:
+    T* m_settings;
+};
+template<class T>
+class SettingsLookup
+{
+public:
+    SettingsLookup(__int64 typeInfo)
+    {
+        m_settings = g_program->LookupSettingsObject<T>(typeInfo);
     }
 
     inline T* operator->()

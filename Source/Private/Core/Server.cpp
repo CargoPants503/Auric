@@ -49,6 +49,7 @@
 #define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
 
 // 1432F28D3 for multiple instances
+#define OFFSET_TYPEINFO_NETWORKSETTINGS 0x142FBF790
 
 namespace Kyber
 {
@@ -422,6 +423,15 @@ void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* me
 
     return trampoline(inst, channel, message);
 }
+
+__int64 SettingsCtr(__int64 SettingsManager, __int64 &typeInfo)
+{
+    static const auto trampoline = HookManager::Call(SettingsCtr);
+
+    return trampoline(SettingsManager, typeInfo);
+}
+
+
 HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
     { OFFSET_SERVER_START, ServerStartHk },
@@ -498,8 +508,7 @@ void Server::InitializeGamePatches()
 
 void Server::InitializeGamePatches2()
 {
-    BYTE ptch3[] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; // NOP out the instruction
-    //MemoryUtils::Patch((void*)OFFSET_INVINCIBILITY_TEST, (void*)ptch3, sizeof(ptch3));
+    BYTE ptch3[] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; 
 }
 
 void Server::InitializeGameSettings()
@@ -508,6 +517,19 @@ void Server::InitializeGameSettings()
     GameTime* gameTimeSettings = Settings<GameTime>("GameTime");
     GameSettings* gameSettings = Settings<GameSettings>("Game");
     OnlineSettings* onlineSettings = Settings<OnlineSettings>("Online");
+    
+    //NetworkSettings
+    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(0x142FBF790));
+    NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
+    auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; // Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
+    networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
+    
+    //KYBER_LOG(LogLevel::Warning, "Network Settings Settings Test : " << std::hex << networkSettings);
+    
+
+
+
+
     gameTimeSettings->TimeScale = 1;
     wsSettings->ForcePrivateMatchLobby = true;
     wsSettings->NoInteractivityTimeoutTime = 600;

@@ -605,7 +605,580 @@ public:
     //char _0x00AB[5];                                  // 0x00AB
     */
 };
-class NetworkSettings : public SystemSettings
+enum QualityLevel
+{
+    QualityLevel_Low,
+    QualityLevel_Medium,
+    QualityLevel_High,
+    QualityLevel_Ultra,
+    QualityLevel_All,
+    QualityLevel_Invalid,
+};
+enum LightTileDebugLightCountMode
+{
+    LightTileDebugLightCountMode_Total,
+    LightTileDebugLightCountMode_Punctual,
+    LightTileDebugLightCountMode_PunctualShadow,
+    LightTileDebugLightCountMode_Area,
+    LightTileDebugLightCountMode_AreaShadow,
+    LightTileDebugLightCountMode_LocalIBL,
+    LightTileDebugLightCountMode_LocalPR,
+};
+enum PostProcessAAMode
+{
+    PostProcessAAMode_None,
+    PostProcessAAMode_FxaaLow,
+    PostProcessAAMode_FxaaMedium,
+    PostProcessAAMode_FxaaHigh,
+    PostProcessAAMode_FxaaCompute,
+    PostProcessAAMode_FxaaComputeExtreme,
+    PostProcessAAMode_Smaa1x,
+    PostProcessAAMode_SmaaT2x,
+    PostProcessAAMode_TemporalAA,
+};
+enum ScaleResampleMode
+{
+    ScaleResampleMode_Point,
+    ScaleResampleMode_Linear,
+    ScaleResampleMode_Bicubic,
+    ScaleResampleMode_Lanczos,
+    ScaleResampleMode_LanczosSeparable,
+    ScaleResampleMode_BicubicSharp,
+    ScaleResampleMode_BicubicSharpSeparable,
+};
+enum SkyRenderMode
+{
+    SkyRenderMode_SkyBox,
+    SkyRenderMode_PhysicallyBased,
+};
+enum SpotLightShadowmapTextureMode
+{
+    SpotLightShadowmapTextureMode_Normal,
+    SpotLightShadowmapTextureMode_Array,
+    SpotLightShadowmapTextureMode_Atlas,
+};
+struct QualityScalableInt
+{
+    int32_t Low;
+    int32_t Medium;
+    int32_t High;
+    int32_t Ultra;
+};
+struct WorldRenderSettingsBase : DataContainer
+{
+    float CullScreenAreaScale;
+    float MinShadowViewCoverage;
+    Vec3 MotionBlurClearColor;
+    Vec3 DynamicEnvmapDefaultPosition;
+    float ShadowmapMinFov;
+    float ShadowmapSizeZScale;
+    uint32_t ShadowmapResolution;
+    uint32_t ShadowmapResolutionMax;
+    uint32_t ShadowmapQuality;
+    float ShadowmapPoissonFilterScale;
+    uint32_t ShadowmapSliceCount;
+    float ShadowmapSliceSchemeWeight;
+    float ShadowmapFirstSliceScale;
+    float ShadowmapViewDistance;
+    float ShadowmapExtrusionLength;
+    float ForceShadowmapFirstSliceViewDistance;
+    float CockpitShadowsExtrusionLength;
+    float ShadowmapTransitionBlendAmount;
+    float ShadowmapForegroundExtrusionLength;
+    float ShadowmapForegroundSplitDistance;
+    float ShadowmapForegroundSizeZScale;
+    float ViewportMaskScale;
+    float ViewportMaskInnerScale;
+    int32_t SunPcssMaxSampleCount;
+    int32_t SunPcssAdaptiveSampleIncrement;
+    float MotionBlurScale;
+    float MotionBlurFixedShutterTime;
+    float MotionBlurMax;
+    float MotionBlurRadialBlurMax;
+    float MotionBlurNoiseScale;
+    uint32_t MotionBlurQuality;
+    uint32_t MotionBlurDebugMode;
+    uint32_t MotionBlurMaxSampleCount;
+    float ForceMotionBlurDepthCutoff;
+    float ForceMotionBlurCutoffGradientScale;
+    float MotionBlurDepthCheckThreshold;
+    float MotionBlurDepthCheckMaxDistance;
+    uint32_t MultisampleCount;
+    uint32_t MultisampleQuality;
+    int32_t OnlyShadowmapSlice;
+    char padding[4]; // WorldViewMode ViewMode;
+    uint32_t AdditionalHdrTargetInESRAM;
+    int32_t DrawDebugBlurPyramidMipLevel;
+    uint32_t DrawDebugBuffers;
+    float HalfResDepthMinMaxDitherThreshold;
+    uint32_t PhysicalSkyPrecisionHeight;
+    uint32_t PhysicalSkyPrecisionView;
+    uint32_t PhysicalSkyPrecisionSun;
+    uint32_t PhysicalSkyScatteringOrders;
+    uint32_t PhysicalSkyAerialPerspectiveTextureWidth;
+    uint32_t PhysicalSkyAerialPerspectiveTextureHeight;
+    uint32_t PhysicalSkyAerialPerspectiveTextureDepth;
+    uint32_t PhysicalSkyScatteringEvalFrameCount;
+    float PhysicalSkyAerialPerspectiveMaxDistance;
+    float SkyEnvmapFilterWidth;
+    uint32_t SkyEnvmapResolution;
+    int32_t DrawDebugSkyEnvmapMipLevel;
+    char padding2[4]; // MipmapFilterMode SkyEnvmapFilterMode;
+    uint32_t SkyEnvmapSidesPerFrameCount;
+    float SkyEnvmapUpdateCountThreshold;
+    float SkyEnvmapUpdateValueThreshold;
+    float DynamicEnvmapFilterWidth;
+    int32_t DrawDebugDynamicEnvmapMipLevel;
+    char padding3[4]; // MipmapFilterMode DynamicEnvmapFilterMode;
+    uint32_t DynamicEnvmapSpecularConvolutionSampleCount;
+    uint32_t DynamicEnvmapShadowmapResolution;
+    int32_t DynamicEnvmapShadowmapFarPlane;
+    int32_t DynamicEnvmapShadowmapShadowExtrusion;
+    bool DeferredShadingEnable;
+    bool ForwardOpaqueEnable;
+    bool FullZPassEnable;
+    bool TileMaterialClassificationEnable;
+    bool ShadowmapsEnable;
+    bool ShadowmapArrayEnable;
+    bool TransparencyShadowmapsEnable;
+    bool TransparencyShadowmapsHalfRes;
+    bool ShadowmapFixedMovementEnable;
+    bool ShadowmapFixedDepthEnable;
+    bool ShadowmapViewDistanceScaleEnable;
+    bool ShadowmapCullVolumeEnable;
+    bool ShadowmapAdjustFarPlane;
+    bool CockpitShadowsEnable;
+    bool ShadowmapAccumEnable;
+    bool ShadowmapAccumReuseEnable;
+    bool ShadowmapAccumBilinearEnable;
+    bool ShadowmapAccumStencilEnable;
+    bool ShadowmapAccumStencil2Enable;
+    bool ShadowmapTransitionBlendEnable;
+    bool ShadowmapForegroundEnable;
+    bool ShadowmapForegroundUseFirstPersonViewTransform;
+    bool ShadowmapStereoSharedEnable;
+    bool DrawListStereoSharedEnable;
+    bool DxShadowmap16BitEnable;
+    bool DxSpotLightShadowmap16BitEnable;
+    bool DxDynamicEnvmapShadowmap16BitEnable;
+    bool ApplyShadowmapsEnable;
+    bool GenerateShadowmapsEnable;
+    bool SimpleShadowmapsEnable;
+    bool EmitterShadowingBlendToggle;
+    bool EmitterShadowingManySamplesToggle;
+    bool DxLinearDepth32BitFormatEnable;
+    bool MotionBlurEnable;
+    bool MotionBlurForceOn;
+    bool MotionBlurOptimalStableVelocityFormula;
+    bool MotionBlurPreciseStableVelocityFormula;
+    bool MotionBlurStencilPassEnable;
+    bool MotionBlurGeometryPassEnable;
+    bool MotionBlurBackgroundPassEnable;
+    bool MotionBlurCenteredEnable;
+    bool MotionBlurHairPassEnable;
+    bool DrawTransparent;
+    bool DrawTransparentDecal;
+    bool TransparentAfterMotionBlur;
+    bool Enable;
+    bool HdrEnable;
+    bool LdrEnable;
+    bool ReadOnlyDepthEnable;
+    bool ConsoleRenderTargetPoolSharingEnable;
+    bool FastHdrEnable;
+    bool LinearDepthInESRAM;
+    bool HalfResDepthResolveEnable;
+    bool FinalPostEnable;
+    bool OutputGammaCorrectionEnable;
+    bool ScreenEffectEnable;
+    bool DrawSolidBoundingBoxes;
+    bool DrawLineBoundingBoxes;
+    bool DrawBoundingSpheres;
+    bool DrawFrustums;
+    bool DrawLocalIBLFrustums;
+    bool DrawDebugShadowmaps;
+    bool DrawDebugSpotLightShadowmaps;
+    bool DrawDebugSkyEnvmap;
+    bool DrawDebugVelocityBuffer;
+    bool DrawDebugZBufferEnable;
+    bool DrawDebugHalfResEnvironment;
+    bool DrawDebugDistortion;
+    bool DrawDebugVisibleEntityTypes;
+    bool DrawDebugSkyTextures;
+    bool DrawDebugMarschnerTextures;
+    bool DrawDebugDof;
+    bool DrawDebugDofFullscreen;
+    bool DrawDebugHalfResHdrTargets;
+    bool DrawDebugHiZMinMaxBufferEnable;
+    bool DrawDebugScreenSpaceRaytraceBucketsEnable;
+    bool DrawDebugEmitterSunTransmittanceMaps;
+    bool DrawDebugBlurPyramid;
+    bool DrawDebugOcclusionZBuffer;
+    bool DrawDebugLocalIBLOcclusionZBuffer;
+    bool WireframeEnable;
+    bool ZPassEnable;
+    bool OccluderMeshZPrepassEnable;
+    bool OccluderMeshZPrepassDrawEnable;
+    bool OccluderMeshZPrepassDebugEnable;
+    bool HalfResEnable;
+    bool ForceFullResEnable;
+    bool HalfResLensFlaresEnable;
+    bool ForegroundEnable;
+    bool ForegroundDepthClearEnable;
+    bool ForegroundZPassEnable;
+    bool ForegroundTransparentEnable;
+    bool ThirdPersonFriendlySSREnable;
+    bool MidgroundEnable;
+    bool ExtraHalfResDepthForSSAO;
+    bool BilateralHalfResCompositeEnable;
+    bool HalfResDepthMinMaxDitherEnable;
+    bool SkyLightingEnable;
+    bool SkyRenderEnable;
+    bool SkyDepthFogEnable;
+    bool SkyHeightFogEnable;
+    bool SkyForwardScatteringEnable;
+    bool PhysicalSkyEnabled;
+    bool PhysicalSkyForcePrecompute;
+    bool TransparentFoggingEnable;
+    bool DistortionEnable;
+    bool DistortionHalfResEnable;
+    bool Distortion8BitEnable;
+    bool DistortionTilingEnable;
+    bool StaticEnvmapEnable;
+    bool CustomEnvmapEnable;
+    bool CustomEnvmapMipmapClampEnable;
+    bool SkyEnvmapEnable;
+    bool SkyEnvmapMipmapGenEnable;
+    bool SkyEnvmapUpdateEnable;
+    bool SkyEnvmapForceUpdateEnable;
+    bool SkyEnvmapUseFastHDR;
+    bool SkyEnvmapUse32bitLatLongTexture;
+    bool SkyEnvmapDebugColorEnable;
+    bool DynamicEnvmapEnable;
+    bool DynamicEnvmapMipmapGenEnable;
+    bool DrawDebugDynamicEnvmap;
+    bool DynamicEnvmapShadowmapEnable;
+    bool DynamicEnvmapShadowmapFarPlaneOverride;
+    bool DynamicEnvmapShadowmapShadowExtrusionOverride;
+    bool DrawDebugDynamicEnvmapShadowmap;
+    bool DrawDynamicEnvmapFrustums;
+    bool HairCoverageEnable;
+    bool SetupJobEnable;
+    bool FinishSyncJobsFirstEnable;
+    bool PrepareDispatchListJobEnable;
+};
+struct WorldRenderSettings : WorldRenderSettingsBase
+{
+    uint32_t GenericEntityMaxVisibleEntityCount;
+    uint32_t DrawDebugGroundHeight;
+    float DecalVolumeScale;
+    uint32_t MaxLensFlaresPerFrame;
+    QualityLevel LensFlaresQualityLevel;
+    uint32_t GBufferLayout;
+    uint32_t GBufferTestCount;
+    float GBufferAlphaTestSimpleSmoothness;
+    float GBufferForceSmoothness;
+    float GBufferForceSpecularAlbedo;
+    int32_t HierarchicalZJitterForceIndex;
+    uint32_t OutdoorLightTileBatchCount;
+    int32_t OnlyLightTileIndex;
+    uint32_t EmitterSunTransmittanceMapResolution;
+    uint32_t MaxDestructionVolumeCount;
+    uint32_t MaxDecalVolumeCount;
+    uint32_t LightTileCsAvgLightCountPerTile;
+    float LightCullFrustumExpandDistance;
+    LightTileDebugLightCountMode LightTileDebugLightMode;
+    int32_t LightTileDebugColorMode;
+    uint32_t DebugLightStatsLightCountHighwatermark;
+    float LightLodFadeArea;
+    float LightLodMinArea;
+    float LightLodRadiusFactor;
+    uint32_t OcclusionCullingWidth;
+    uint32_t OcclusionCullingHeight;
+    uint32_t OcclusionTriangleCount;
+    uint32_t ShadowOcclusionCullingWidth;
+    uint32_t ShadowOcclusionCullingHeight;
+    uint32_t ShadowOcclusionTriangleCount;
+    float FrustumSilhouetteCullingPadding;
+    int32_t SubSurfaceScatteringSampleCount;
+    float SubsurfaceBlurPixelRadiusCullThreshold;
+    int32_t OnlyTileIndex;
+    float PlanarReflectionViewScale;
+    float PlanarReflectionConvolutionSampleClampThreshold;
+    uint32_t PlanarReflectionConvolutionSampleCount;
+    float PlanarReflectionCullFOV;
+    float PlanarReflectionFarPlane;
+    uint32_t DrawDebugPlanarReflectionMipLevel;
+    uint32_t DrawDebugPlanarReflectionMode;
+    float ReflectionLodScale;
+    PostProcessAAMode PostProcessAntialiasingMode;
+    uint32_t TemporalAAJitterCount;
+    float TemporalAASharpness;
+    float TemporalAAMinHistoryBlendFactor;
+    float TemporalAAMaxHistoryBlendFactor;
+    float TemporalAADisocclusionRejectionFactor;
+    float TemporalAALumaContrastFactor;
+    float TemporalAAMotionSharpeningFactor;
+    float TemporalAAAntiflickerMultiplier;
+    float TemporalAAAntiflickerInDistance;
+    float TemporalAAAntiflickerOutDistance;
+    uint32_t DrawDebugTemporalAAAccumulationCount;
+    uint32_t DrawDebugTemporalAADebugMode;
+    float DrawDebugTemporalAAMaxDistance;
+    float TemporalAAResponsiveness;
+    float TemporalAAAntiflickerStrength;
+    uint32_t TemporalAAQuality;
+    ScaleResampleMode RenderScaleResampleMode;
+    QualityLevel SkyCelestialQuality;
+    QualityScalableInt SkyCelestialMaxQuadCount;
+    SkyRenderMode SkyRenderMode;
+    float InterpupillaryDistance;
+    uint32_t SpotLightShadowmapResolution;
+    uint32_t SpotLightShadowmapQuality;
+    float SpotLightShadowmapPoissonFilterScale;
+    SpotLightShadowmapTextureMode SpotLightShadowmapTextureMode;
+    float SpotLightShadowMaxAngle;
+    float SpotLightShadowFadeOutRange;
+    uint32_t MaxShadowCount;
+    uint32_t MaxPunctualLightCount;
+    uint32_t MaxPunctualShadowLightCount;
+    uint32_t MaxAreaLightCount;
+    uint32_t MaxAreaShadowLightCount;
+    uint32_t MaxLocalReflectionVolumeCount;
+    uint32_t MaxLocalPlanarReflectionCount;
+    uint32_t MaxPunctualRectangularLightCount;
+    QualityLevel PunctualLightShadowLevel;
+    QualityLevel AreaLightShadowLevel;
+    uint32_t LocalIBLMaxFaceCapture;
+    uint32_t LocalIBLLightingUpdateCount;
+    uint32_t LocalIBLRefreshDelayCount;
+    float LocalIBLSunUpdateThreshold;
+    uint32_t LocalIBLShadowmapSliceCount;
+    uint32_t LocalIBLShadowmapResolution;
+    uint32_t PBRLocalIBLAcquisitionWaitFrameCount;
+    uint32_t PBRDiffuseConvolutionMipLevelOffset;
+    uint32_t PBRSpecularConvolutionSampleCount;
+    uint32_t PBRDebugSpecularConvolutionSampleCount;
+    uint32_t LocalIBLResolution;
+    float DrawDebugLocalIBLPreviewScale;
+    uint32_t DrawDebugLocalIBLIndex;
+    uint32_t DrawDebugLocalIBLMipLevel;
+    uint32_t ContinuousLocalIBLIndex;
+    uint32_t MaxLocalPlanarReflectionTargetCount;
+    float PBRMaxIlluminanceValue;
+    float DiffuseRangeSRGBMinLimitValue;
+    float DiffuseRangeSRGBMinValue;
+    float DiffuseRangeSRGBMaxValue;
+    float DiffuseRangeSRGBMaxLimitValue;
+    float VolumetricLightCascadeBaseVoxelSize;
+    float VolumetricLightCascadeVoxelSizeCascadeFactor;
+    uint32_t VolumetricLightCascadeResolution;
+    float VolumetricDensityCascadeBaseVoxelSize;
+    float VolumetricDensityCascadeVoxelSizeCascadeFactor;
+    uint32_t VolumetricDensityCascadeResolution;
+    float VolumetricLightingIncreaseTemporalSmoothingFactor;
+    float VolumetricLightingDecreaseTemporalSmoothingFactor;
+    uint32_t VolumetricShadowQuality;
+    uint32_t VolumetricShadowmapResolution;
+    uint32_t VolumetricShadowmapMaxCount;
+    QualityLevel PunctualLightCastVolumetricShadowmapEnableLevel;
+    QualityLevel AreaLightCastVolumetricShadowmapEnableLevel;
+    uint32_t VolumetricParticlesInjectionMode;
+    uint32_t DrawDebugVolumetricDensity;
+    uint32_t DrawDebugVolumetricLight;
+    float DrawGpuHistogramHDRMinEV;
+    float DrawGpuHistogramHDRMaxEV;
+    uint32_t DrawGpuHistogramBinCount;
+    uint32_t NumberOfEntitiesPerPartition;
+    int32_t ForceTemporalAAQuality;
+    bool TestRenderingEnable;
+    bool GenericEntityRendererEnable;
+    bool ZBufferShadowTestEnable;
+    bool DecalVolumeEnable;
+    bool DrawDebugDecalVolumes;
+    bool DrawDebugDestructionVolumes;
+    bool LensFlaresEnable;
+    bool DrawDebugLensFlareOccluders;
+    bool DrawDebugLensFlares;
+    bool LensFlareOcclusionEnable;
+    bool CloudShadowEnable;
+    bool OverrideDynamicAO;
+    bool DrawDebugDynamicAO;
+    bool FilmicEffectsEnable;
+    bool EmissiveEnable;
+    bool GBufferClearEnable;
+    bool DxGBufferLight16BitEnable;
+    bool DxGBufferNormal16BitEnable;
+    bool DxGBufferRoughness16BitEnable;
+    bool GBufferAlphaTestSimpleEnable;
+    bool Gen4aEsramEnable;
+    bool Gen4aHierarchicalZEsramEnable;
+    bool Gen4aScreenSpaceRaytraceEsramEnable;
+    bool HierarchicalZJitterEnable;
+    bool SpecularLightingEnable;
+    bool SkinLightingEnable;
+    bool TranslucencyLightingEnable;
+    bool TranslucencyAutoThicknessEnable;
+    bool DynamicEnvmapLightingEnable;
+    bool OutdoorLightEnable;
+    bool LightStencilMethodEnable;
+    bool LightVolumeMethodEnable;
+    bool LightVolumeDepthTestEnable;
+    bool OutdoorKeyLightEnable;
+    bool OutdoorSkyLightEnable;
+    bool OutdoorLightTilingEnable;
+    bool OutdoorLightTileRenderEnable;
+    bool OutdoorLightTileBlendEnable;
+    bool OutdoorLightTileSimpleShaderEnable;
+    bool EmitterSunTransmittanceMapEnable;
+    bool RadiositySpotLightShadowCullingEnable;
+    bool LightTileCombineOutdoorLightEnable;
+    bool LightTileCsPathEnable;
+    bool LightTileAsyncComputeCulling;
+    bool LightTileMinMaxUseHTile;
+    bool LightTileUseCullingHierarchy;
+    bool LightTileUseDetailedGpuTimers;
+    bool LightTileUseCsIndirectClears;
+    bool DrawDebugLightStats;
+    bool DrawDebugLightStatsForward;
+    bool DrawDebugLightSources;
+    bool DrawDebugLightShadowSources;
+    bool DrawDebugLightShadowStats;
+    bool DrawDebugGBuffer;
+    bool DrawDebugMaterialInput;
+    bool DrawDebugMaterialOutput;
+    bool DrawDebugLightEmissiveSurface;
+    bool UseNewLightCullEnable;
+    bool LightCullEnable;
+    bool LightOcclusionCullEnable;
+    bool LightConeCullEnable;
+    bool LocalIBLOcclusionCullingEnable;
+    bool ShadowOcclusionCullingEnable;
+    bool FrustumSilhouetteCullingEnable;
+    bool SubSurfaceScatteringEnable;
+    bool TranslucencyEnable;
+    bool SplitLightingEnable;
+    bool SubsurfaceBlurComputeEnable;
+    bool SubsurfaceBlurQuadtreeTileGenEnable;
+    bool OpaqueSortBySolutionEnable;
+    bool MainOpaqueZPassEnable;
+    bool PlanarReflectionEnable;
+    bool PlanarReflectionFastHdrEnable;
+    bool PlanarReflectionBlurEnable;
+    bool PlanarReflectionConvolutionEnable;
+    bool PlanarReflectionConvolutionRandomSamplesEnable;
+    bool PlanarReflectionConvolutionPostFilterEnable;
+    bool PlanarReflectionClippingEnable;
+    bool DrawDebugPlanarReflection;
+    bool DrawDebugPlanarReflectionCullFrustum;
+    bool LocalPlanarReflectionConvolutionEnable;
+    bool OverlayEnable;
+    bool OverlayZTestEnable;
+    bool OutlineEnable;
+    bool SmaaVelocityReprojectionEnable;
+    bool SmaaUseStencil;
+    bool SmaaPredicatedThresholdingEnable;
+    bool TemporalAAJitterUseCmj;
+    bool TemporalAASmoothHistoryFiltering;
+    bool TemporalAAAsyncCompute;
+    bool DrawDebugTemporalAAEnable;
+    bool TemporalAADofCocFilterEnable;
+    bool TemporalAAHistorySharpeningEnable;
+    bool RenderScaleResampleEnable;
+    bool SkyCelestialEnable;
+    bool FullscreenLensReflectionEnable;
+    bool SpriteDOFBeforeMotionBlur;
+    bool VrHmdLensDistortionEnable;
+    bool VrHmdLateReprojectionEnable;
+    bool SpotLightShadowmapEnable;
+    bool PBRSupportOriginalLight;
+    bool RadiosityShadowCullingEnable;
+    bool PunctualLightsEnable;
+    bool AreaLightsEnable;
+    bool LocalReflectionEnable;
+    bool TilePassPunctualLightsEnable;
+    bool TilePassPunctualLightShadowEnable;
+    bool TilePassAreaLightsEnable;
+    bool TilePassAreaLightShadowEnable;
+    bool TilePassLocalReflectionVolumeEnable;
+    bool TilePassLocalPlanarReflectionEnable;
+    bool SphereLightsEnable;
+    bool PunctualSphereLightsEnable;
+    bool SpotLightsEnable;
+    bool PunctualSpotLightsEnable;
+    bool TubeLightsEnable;
+    bool PunctualTubeLightsEnable;
+    bool RectangularLightsEnable;
+    bool PunctualRectangularLightsEnable;
+    bool LocalReflectionVolumeSphereEnable;
+    bool LocalReflectionVolumeBoxEnable;
+    bool LocalPlanarReflectionEnable;
+    bool LocalIBLUpdateWithSkyEnable;
+    bool LocalIBLUpdateWithEnlightenSkyBoxChange;
+    bool LocalIBLSunSpecularOcclusionEnable;
+    bool LocalIBLBoxCullingEnable;
+    bool LocalIBLShadowmapFaceMerging;
+    bool PBRLocalIBLFogEnable;
+    bool PBRDrawDiffuseReference;
+    bool PBRDrawSpecularReference;
+    bool PBRDrawLocalIBLReference;
+    bool PBRDrawDistantIBLReference;
+    bool PBRDrawAreaLightReference;
+    bool PBRConvolutionMISEnable;
+    bool PBRConvolutionHighestMIPEnable;
+    bool PBRConvolutionCubeArrayEnable;
+    bool PBRConvolutionChainEnable;
+    bool DrawDebugLocalIBLEnable;
+    bool DrawDebugLocalIBLStatsEnable;
+    bool DrawDebugLocalIBLShadowmaps;
+    bool DrawDebugPreIntegratedFGTexture;
+    bool DrawDebugReflectionState;
+    bool DrawDebugProbeMirrorEnable;
+    bool DrawDebugProbeDiffuseEnable;
+    bool DrawDebugProbeScreenEnable;
+    bool DrawDebugProbeScreenOnRight;
+    bool ContinuousLocalIBLEnable;
+    bool PBRConvolutionPrecomputedSampleEnable;
+    bool PBRConvolutionComputeEnable;
+    bool PBRConvolutionRandomRotationEnable;
+    bool DrawDebugLocalPlanarReflections;
+    bool EmitterQuadRenderingEnable;
+    bool EmitterMeshRenderingEnable;
+    bool EmitterPointLightsEnable;
+    bool EmitterSpotLightsEnable;
+    bool UseSSSProfileforOATS;
+    bool DeterministicRenderingEnable;
+    bool HdrNanInfRemovalEnable;
+    bool HdrNanInfRemovalForceEnable;
+    bool VolumetricRenderingEnable;
+    bool VolumetricCascadePositionUpdateEnable;
+    bool VolumetricLightingTemporalAAEnable;
+    bool VolumetricLightingUpsamplePreviousCascade;
+    bool VolumetricShadowSkipLowerMipSamples;
+    bool VolumetricShadowCascadeBasedQuality;
+    bool VolumetricShadowmapEnable;
+    bool VolumetricParticlesDensityInjectionEnable;
+    bool EmitterVolumetricLightingEnable;
+    bool DrawDebugVolumetricCascadedVolumesEnable;
+    bool DrawDebugVolumetricShadowMaps;
+    bool DrawDebugVolumetricEmitterInjectingDensityEnable;
+    bool LightShaftFastHdrEnable;
+    bool DrawGpuHistogramEnable;
+    bool DrawGpuHistogramRed;
+    bool DrawGpuHistogramBlue;
+    bool DrawGpuHistogramGreen;
+    bool DrawGpuHistogramLuminance;
+    bool DrawGpuHistogramHDRMode;
+    bool EntityRendererPartitioningEnable;
+    bool DrawDebugEntityRendererPartitions;
+    bool VehicleEntityForegroundZPassEnable;
+    bool SoldierRenderFirstPersonTransformEnable;
+    bool SelectiveStaticModelEntityZPassEnable;
+    bool AfterTAATransparentEnable;
+    bool AfterTAAForegroundNoDepthEnable;
+    bool VehicleEntityEnableMeshComponentCulling;
+    bool ForceTemporalAAOff;
+};
+class NetworkSettings : public DataContainer
 {
 public:
     uint32_t ProtocolVersion;
@@ -650,7 +1223,10 @@ public:
     bool UseFrameManager;
     bool TimeSyncEnabled;
 
-
+    static NetworkSettings* GetInstance()
+    {
+        return *reinterpret_cast<NetworkSettings**>(0x14281C858);
+    }
 
 
     /*
@@ -710,6 +1286,94 @@ struct Guid
     uint16_t data3;
     uint8_t data4[8];
 };
+struct GameRenderSettings : DataContainer
+{
+    //void* vtbl;
+    uint32_t InactiveSkipFrameCount;
+    float ResolutionScale;
+    float ResolutionScaleMax;
+    int32_t MantleEnable;
+    float CameraCutMaxFrameTranslation;
+    float NearPlane;
+    float ViewDistance;
+    float ForceFov;
+    float FovMultiplier;
+    float ForceOrthoViewSize;
+    float EdgeModelScreenAreaScale;
+    float EdgeModelViewDistance;
+    int32_t EdgeModelForceLod;
+    float EdgeModelLodScale;
+    float StaticModelPartOcclusionMaxScreenArea;
+    uint32_t StaticModelCullJobCount;
+    uint32_t SplitScreenTestViewCount;
+    uint32_t SplitScreenTestCase;
+    float ForceBlurAmount;
+    float ForceWorldFadeAmount;
+    float StereoCrosshairMaxHitDepth;
+    float StereoCrosshairRadius;
+    float StereoCrosshairDampingFactor;
+    uint32_t UIBlurTextureDivisor;
+    uint32_t UIBlurFilter;
+    float UIBlurDeviation;
+    bool Enable;
+    bool NullRendererEnable;
+    bool JobEnable;
+    bool BuildJobSyncEnable;
+    bool DrawDebugDynamicTextureArrays;
+    bool DrawDebugInfo;
+    bool DrawScreenInfo;
+    bool ResolutionScaleDynamicEnabled;
+    bool Fullscreen;
+    bool ForceVSyncEnable;
+    bool MovieVSyncEnable;
+    bool VSyncFlashTestEnable;
+    bool OutputBrightnessTestEnable;
+    bool GlEnable;
+    bool Dx11Enable;
+    bool Dx12Enable;
+    bool BalsaEnable;
+    bool Gen4bColorRemap;
+    bool GpuTextureCompressorEnable;
+    bool MeshWorldEnable;
+    bool EmittersEnable;
+    bool EntityRenderEnable;
+    bool DebugRendererEnable;
+    bool DebugRenderServiceEnable;
+    bool InitialClearEnable;
+    bool GpuProfilerEnable;
+    bool ForceOrthoViewEnable;
+    bool ForceSquareOrthoView;
+    bool DestructionVolumeDrawEnable;
+    bool EdgeModelsEnable;
+    bool EdgeModelCastShadowsEnable;
+    bool EdgeModelDepthBiasEnable;
+    bool EdgeModelShadowDepthBiasEnable;
+    bool EdgeModelUseMainLodEnable;
+    bool EdgeModelUseLodBox;
+    bool EdgeModelCullEnable;
+    bool EdgeModelFrustumCullEnable;
+    bool EdgeModelDrawBoxes;
+    bool EdgeModelDrawStats;
+    bool StaticModelEnable;
+    bool StaticModelMeshesEnable;
+    bool StaticModelZPassEnable;
+    bool StaticModelPartCullEnable;
+    bool StaticModelPartFrustumCullEnable;
+    bool StaticModelPartOcclusionCullEnable;
+    bool StaticModelPartShadowCullEnable;
+    bool StaticModelDrawBoxes;
+    bool StaticModelDrawStats;
+    bool StaticModelCullSpuJobEnable;
+    bool StaticModelSurfaceShaderTerrainAccessEnable;
+    bool LockView;
+    bool ResetLockedView;
+    bool InfiniteProjectionMatrixEnable;
+    bool SecondaryStreamingViewEnable;
+    bool FadeEnable;
+    bool FadeWaitingEnable;
+    bool BlurEnable;
+};
+
 class ClientSettings : public SystemSettings
 {
 public:

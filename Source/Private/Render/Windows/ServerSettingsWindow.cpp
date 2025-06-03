@@ -30,12 +30,23 @@ void ServerSettingsWindow::Draw()
         {
             KYBER_LOG(LogLevel::Error, "g_program or g_program->m_server is null!");
         }
+
+        //SystemSettings Exposed
         WSGameSettings* wsSettings = Settings<WSGameSettings>("Whiteshark");
         GameTime* gameTimeSettings = Settings<GameTime>("GameTime");
         GameSettings* gameSettings = Settings<GameSettings>("Game");
         ClientSettings* clientSettings = Settings<ClientSettings>("Client");
         ServerSettings* serverSettings = Settings<ServerSettings>("Server");
         SyncedGameSettings* syncedGameSettings = Settings<SyncedGameSettings>("SyncedGame");
+
+        //DataContainer Exposed
+
+        //NetworkSettings
+        __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(0x142FBF790)); //(0x142FE82B0)); = Weird
+        NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
+        auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; //Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
+        networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
+
 
         ImGui::Text("Most Settings Only Apply Upon Respawning");
         ImGui::Text("Modifying certain settings can cause server issues, be Careful!");
@@ -59,43 +70,6 @@ void ServerSettingsWindow::Draw()
             serverSettings->RespawnTimeModifier = RespawnTimeModifier;
         }
 
-        //This does not work yet, offsets are hard to find for ebx
-        /*
-        ImGui::SliderFloat("Sprint Speed Multiplier", &sprintSpeedMultiplier, 0.5f, 10.0f);
-        {
-            // Modify the memory value for sprint speed multiplier directly
-            uint8_t targetAoB[] = { 0xA2, 0x66, 0xA8, 0x69, 0x7C, 0xDF, 0xAD, 0x4B, 0xB5, 0x5F, 0x99, 0x53, 0x6F, 0x25, 0x51, 0xF6 };
-            SIZE_T aoBSize = sizeof(targetAoB);
-
-            uintptr_t baseAddress = reinterpret_cast<uintptr_t>(GetModuleHandle(NULL));
-            SIZE_T regionSize = 0x2000000;
-
-            uintptr_t foundAddress = 0;
-
-            for (uintptr_t i = baseAddress; i < baseAddress + regionSize; ++i)
-            {
-                if (memcmp(reinterpret_cast<void*>(i), targetAoB, aoBSize) == 0)
-                {
-                    foundAddress = i;
-                    break;
-                }
-            }
-
-            if (foundAddress != 0)
-            {
-                uintptr_t floatAddress = foundAddress + 0x44; // Offset to the sprint speed float.
-                float* floatPointer = reinterpret_cast<float*>(floatAddress);
-                DWORD oldProtect;
-                VirtualProtect(floatPointer, sizeof(float), PAGE_EXECUTE_READWRITE, &oldProtect);
-                *floatPointer = sprintSpeedMultiplier;
-                VirtualProtect(floatPointer, sizeof(float), oldProtect, &oldProtect);
-            }
-            else
-            {
-                KYBER_LOG(LogLevel::Error, "Sprint speed AoB not found!");
-            }
-        }
-        */
         ImGui::Separator();
         
         static bool DisableRegenerateHealth = syncedGameSettings->DisableRegenerateHealth;
@@ -124,7 +98,6 @@ void ServerSettingsWindow::Draw()
             if (Kyber::IsDebugEnabled())
             {
                 Kyber::SetDebugEnabled(false);
-
             }
             else
             {
