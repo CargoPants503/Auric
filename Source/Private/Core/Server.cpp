@@ -519,7 +519,7 @@ void Server::InitializeGameSettings()
     OnlineSettings* onlineSettings = Settings<OnlineSettings>("Online");
     
     //NetworkSettings
-    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(0x142FBF790));
+    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(OFFSET_TYPEINFO_NETWORKSETTINGS));
     NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
     auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; // Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
     networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
