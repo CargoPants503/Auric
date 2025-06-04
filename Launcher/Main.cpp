@@ -337,9 +337,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         {
             static int lastAttemptTime = 0;
             int currentTime = static_cast<int>(glfwGetTime());
-
-            // Check every 5 seconds to avoid spamming process checks
-            if (currentTime - lastAttemptTime >= 5)
+            if (currentTime - lastAttemptTime >= 0.001)
             {
                 lastAttemptTime = currentTime;
 
@@ -363,7 +361,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     }
                     CloseHandle(hProc);
                 }
-                else if (currentTime - processDetectedTime >= 5) // Inject after 5 seconds
+                else if (currentTime - processDetectedTime >= 2) // Inject after 5 seconds
                 {
                     InjectDLL();               // Inject the DLL
                     autoInjectEnabled = false; // Disable Auto Inject after success
@@ -378,25 +376,23 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         ImGui::Begin("Auric Launcher", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Please Ensure the Kyber.dll is in the same folder as AuricLauncher.exe");
-        ImGui::Text("DLL Path: %s", kyberDllPathStr.c_str());
+        ImGui::Text("Click `Auto Inject` Below before you launch your game to properly initialize console commands.");
+
         
 
-        // Auto Inject Button
-        /*
-        if (ImGui::Button("Launch & Auto Inject"))
-        {
-            LaunchGame();             // Launch the game
-            autoInjectEnabled = true; // Enable auto-injection
-            processDetectedTime = -1; // Reset process detection logic
-        }
-        */
-        if (ImGui::Button("Inject"))
+        //if (ImGui::Button("Auto Inject"))
+        //{
+            
+        //    autoInjectEnabled = true; // Enable auto-injection
+        //    processDetectedTime = -1; // Reset process detection logic
+        //}
+        
+        if (ImGui::Button("Manually Inject"))
         {
             InjectDLL();
             //autoInjectEnabled = true;
             //processDetectedTime = -1;
         }
-        ImGui::Text("Note: Sometimes launching as admin won't inject into battlefront properly");
 
         // FPS Display
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

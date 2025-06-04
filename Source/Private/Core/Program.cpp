@@ -52,7 +52,7 @@ Program::Program(HMODULE module)
     GetConsoleMode(stdoutHandle, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(stdoutHandle, dwMode);
-    SetConsoleTitleA(("Kyber v" + KYBER_VERSION).c_str());
+    SetConsoleTitleA(("Auric v" + KYBER_VERSION).c_str());
     
     new std::thread([this]() {
         for (int i = 5; i > 0; --i)
