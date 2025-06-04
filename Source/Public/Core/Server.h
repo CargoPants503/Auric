@@ -17,19 +17,11 @@ namespace Kyber
 {
 
 void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId);
-void ServerPlayerLeaveIngameHk(ServerPlayer* inst);
-void ServerPlayerDisconnectHk(ServerPlayer* inst, __int64 reason, const std::string& reasonText);
-void ServerPeerDeleteConnectionHk(__int64 inst, __int64 serverConnection, __int64 reason, char* reasonText);
-__int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player);
-void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText);
 void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText);
 void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message);
 void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player);
-void CreatePlayerManager();
 void LoadLevelHk(ServerLoadLevelStruct a1);
-
-
-
+__int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player);
 
 
 class Server
@@ -44,7 +36,6 @@ public:
     void DisableGameHooks();
     //void ConsoleInit();
     void InitializeGamePatches();
-    void InitializeGamePatches2();
     void InitializeGameSettings();
     void ClientPlayerManagerCtr();
     void Start(const char* level, const char* mode, int maxPlayers);

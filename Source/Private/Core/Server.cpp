@@ -25,13 +25,9 @@
 #define OFFSET_SERVER_START HOOK_OFFSET(0x143C466F0)
 
 #define OFFSET_SERVERPLAYER_SETTEAMID HOOK_OFFSET(0x143CBE6F0)
-#define OFFSET_SERVERPLAYER_LEAVEINGAME HOOK_OFFSET(0x143CB6770)
-#define OFFSET_SERVERPLAYER_DISCONNECT HOOK_OFFSET(0x143CB2040)
-#define OFFSET_SERVERPEER_DELETECONNECTION HOOK_OFFSET(0x143D94660)
-#define OFFSET_SERVERPEER_CONNECTIONFORPLAYER HOOK_OFFSET(0x143CD4180)
 
-#define OFFSET_SERVERCONNECTION_DISCONNECT HOOK_OFFSET(0x143C772F0)
 #define OFFSET_SERVERCONNECTION_KICKPLAYER HOOK_OFFSET(0x143C7F140)
+#define OFFSET_SERVERPEER_CONNECTIONFORPLAYER HOOK_OFFSET(0x143CD4180)
 #define OFFSET_SERVERCONNECTION_CREATEPLAYER HOOK_OFFSET(0x143C7FBA0)
 #define OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER HOOK_OFFSET(0x143CB1CB0)
 
@@ -274,8 +270,6 @@ bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessag
         KYBER_LOG(LogLevel::Info, message->playerName << " has joined as Spectator.");
     }
     return trampoline(inst, message);
-    
-        
 }
 
 __int64 SettingsManagerApplyHk(__int64 inst, __int64* a2, char* script, BYTE* a4)
@@ -320,41 +314,11 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
         trampoline(inst, ipAddress, serverPassword);
     }
 }
-
-void ServerPlayerLeaveIngameHk(ServerPlayer* inst)
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerLeaveIngameHk);
-    KYBER_LOG(LogLevel::Debug, "ServerPlayerLeaveIngame called");
-    trampoline(inst);
-}
-
-void ServerPlayerDisconnectHk(ServerPlayer* inst, __int64 reason, const std::string& reasonText)
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerDisconnectHk);
-    KYBER_LOG(LogLevel::Debug, "ServerPlayerDisconnect called 0x" << reason << " 0x" << reasonText.c_str());
-    trampoline(inst, reason, reasonText);
-}
-
-void ServerPeerDeleteConnectionHk(__int64 inst, __int64 serverConnection, __int64 reason, char* reasonText)
-{
-    static const auto trampoline = HookManager::Call(ServerPeerDeleteConnectionHk);
-    KYBER_LOG(LogLevel::Debug, "ServerPeerDeleteConnection called 0x" << reason << " " << reasonText);
-    trampoline(inst, serverConnection, reason, reasonText);
-}
-
 __int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player)
 {
     static const auto trampoline = HookManager::Call(ServerPeerConnectionForPlayerHk);
     return trampoline(inst, player);
 }
-
-void ServerConnectionDisconnectHk(__int64 inst, __int64 reason, char* reasonText)
-{
-    static const auto trampoline = HookManager::Call(ServerConnectionDisconnectHk);
-    KYBER_LOG(LogLevel::Debug, "ServerConnectionDisconnect called 0x" << reason << " " << reasonText);
-    trampoline(inst, reason, reasonText);
-}
-
 __int64 ServerPatch2Hk(__int64 inst) {
 
     return 3;
@@ -406,12 +370,8 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
     { OFFSET_SERVER_START, ServerStartHk },
     { OFFSET_SERVERPLAYER_SETTEAMID, ServerPlayerSetTeamIdHk },
-    { OFFSET_SERVERPLAYER_LEAVEINGAME, ServerPlayerLeaveIngameHk },
-    { OFFSET_SERVERPEER_DELETECONNECTION, ServerPeerDeleteConnectionHk },
-    { OFFSET_SERVERPEER_CONNECTIONFORPLAYER, ServerPeerConnectionForPlayerHk },
-    { OFFSET_SERVERPLAYER_DISCONNECT, ServerPlayerDisconnectHk },
-    { OFFSET_SERVERCONNECTION_DISCONNECT, ServerConnectionDisconnectHk },
     { OFFSET_SERVERCONNECTION_KICKPLAYER, ServerConnectionKickPlayerHk },
+    { OFFSET_SERVERPEER_CONNECTIONFORPLAYER, ServerPeerConnectionForPlayerHk },
     { OFFSET_SERVERSENDMESSAGE, SendServerMessageHk },
     { OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER, ServerPlayerManagerDeletePlayerHk },
     { OFFSET_APPLY_SETTINGS, SettingsManagerApplyHk },
