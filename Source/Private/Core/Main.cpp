@@ -6,6 +6,7 @@
 #include <Core/Program.h>
 
 #include <string>
+#define EASTL_USER_DEFINED_ALLOCATOR
 
 void* operator new[](
     size_t size, size_t alignment, size_t alignmentOffset, const char* pName, int flags, unsigned debugFlags, const char* file, int line)

@@ -1,4 +1,4 @@
-// Copyright BattleDash. All Rights Reserved.
+﻿// Copyright BattleDash. All Rights Reserved.
 
 #include <Core/Program.h>
 
@@ -28,11 +28,14 @@ namespace Kyber
 {
 Program::Program(HMODULE module)
     : m_module(module)
-    , //m_api(nullptr),
-     m_server(nullptr)
+    , m_server(nullptr)
     , m_clientState(ClientState_None)
     , m_joining(false)
 {
+    
+    InitializePatches();
+    KYBER_LOG(LogLevel::Info, "Initialized Game Patches");
+
     if (g_program || MH_Initialize() != MH_OK)
     {
         ErrorUtils::ThrowException("Initialization failed. Please restart Battlefront and try again!");
@@ -49,10 +52,21 @@ Program::Program(HMODULE module)
     GetConsoleMode(stdoutHandle, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(stdoutHandle, dwMode);
-
     SetConsoleTitleA(("Kyber v" + KYBER_VERSION).c_str());
-
-    new std::thread(&Program::InitializationThread, this);
+    
+    new std::thread([this]() {
+        for (int i = 5; i > 0; --i)
+        {
+            std::cout << "\rInitialization starting in " << i << "... " << std::flush;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+        }
+        std::cout << "\r[Kyber-Release] [Info]                                                        \n";
+        this->InitializationThread();
+    });
+    KYBER_LOG(LogLevel::Info, " ____           ___       ___            _    ");
+    KYBER_LOG(LogLevel::Info, "|  __| ___  __ |_. | ___ | . | ____ -__ | |_   __");
+    KYBER_LOG(LogLevel::Info, "| |__ | .'|| _| _| || . ||  _|| . ||   ||  _||_ -| ");
+    KYBER_LOG(LogLevel::Info, "|____||__,||_| |__//|___||_|  |__,||_|_||_|  |___|");
 }
 
 Program::~Program()
@@ -66,23 +80,14 @@ Program::~Program()
 
 DWORD WINAPI Program::InitializationThread()
 {
-    KYBER_LOG(LogLevel::Info, "Initializing...");
-    KYBER_LOG(LogLevel::Info, " ____           ___       ___            _    ");
-    KYBER_LOG(LogLevel::Info, "|  __| ___  __ |_. | ___ | . | ____ -__ | |_   __");
-    KYBER_LOG(LogLevel::Info, "| |__ | .'|| _| _| || . ||  _|| . ||   ||  _||_ -| ");
-    KYBER_LOG(LogLevel::Info, "|____||__,||_| |__//|___||_|  |__,||_|_||_|  |___|");
-    /*
-    KYBER_LOG(LogLevel::Info, " _____     _   _   _     ____           _ ");
-    KYBER_LOG(LogLevel::Info, "| __  |___| |_| |_| |___|    \\ ___ ___| |_");
-    KYBER_LOG(LogLevel::Info, "| __ -| .'|  _|  _| | -_|  |  | .'|_ -|   |");
-    KYBER_LOG(LogLevel::Info, "|_____|__,|_| |_| |_|___|____/|__,|___|_|_|");
-    */
+    KYBER_LOG(LogLevel::Info, "Starting");
     InitializeGameHooks();
-    KYBER_LOG(LogLevel::Warning, "Special Thanks to BattleDash, and Andersson799!")
-    //m_api = new KyberAPIService();
+    KYBER_LOG(LogLevel::Warning, "Special Thanks to BattleDash")
+ 
     g_renderer = new Renderer();
     m_server = new Server();
     m_server->ClientPlayerManagerCtr();
+
     KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);
     KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Auric!");
 
@@ -107,6 +112,15 @@ HookTemplate program_hook_offsets[] = {
     { OFFSET_SETTINGS_CTR, LookupSettingsObjectHk}
 };
 
+void Program::InitializePatches()
+{
+    BYTE alwaysTruePatch[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+    MemoryUtils::Patch((void*)0x143338021, alwaysTruePatch, sizeof(alwaysTruePatch));
+    MemoryUtils::Patch((void*)0x143362261, alwaysTruePatch, sizeof(alwaysTruePatch));
+    BYTE alwaysFalsePatch[2] = { 0xEB, 0x0F };
+    MemoryUtils::Patch((void*)0x1432F28C6, alwaysFalsePatch, sizeof(alwaysFalsePatch));
+}
+
 void Program::InitializeGameHooks()
 {
     for (HookTemplate& hook : program_hook_offsets)
@@ -114,16 +128,18 @@ void Program::InitializeGameHooks()
         HookManager::CreateHook(hook.offset, hook.hook);
     }
     Hook::ApplyQueuedActions();
-    
 }
 
 __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, ClientState lastClientState)
 {
     static const auto trampoline = HookManager::Call(ClientStateChangeHk);
+
     g_program->m_clientState = currentClientState;
     g_program->m_server->m_isFirstLaunch = false; //For ServerWindow.cpp UI fixing
+
     KYBER_LOG(LogLevel::Debug, "Client state changed to " << currentClientState);
     Server* server = g_program->m_server;
+
     if (currentClientState == ClientState_Startup)
     {
         if (server->m_running)

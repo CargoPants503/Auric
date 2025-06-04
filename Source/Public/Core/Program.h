@@ -25,6 +25,7 @@ public:
     ~Program();
 
     DWORD WINAPI InitializationThread();
+    void InitializePatches();
     void InitializeGameHooks();
 
     template<typename T>
@@ -52,7 +53,7 @@ public:
     Server* m_server;
     ClientState m_clientState;
     bool m_joining;
-
+    bool m_threadStarted;
 };
 
 template<class T>

@@ -2,7 +2,7 @@
 
 #define _WINSOCKAPI_
 #include <Core/Server.h>
-
+#include <Hook/Func.h>
 #include <Core/Program.h>
 //#include <Render/Windows/ServerWindow.h>
 #include <Hook/HookManager.h>
@@ -48,12 +48,9 @@
 #define OFFSET_LOADLEVEL HOOK_OFFSET(0x1445049A0)
 #define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
 
-// 1432F28D3 for multiple instances
-#define OFFSET_TYPEINFO_NETWORKSETTINGS 0x142FBF790
 
 namespace Kyber
 {
-
 
 TypeCodeEnum TypeInfo::getBasicType() const
 {
@@ -75,11 +72,9 @@ Server::Server()
     , m_serverInstance(0)
     , m_isFirstLaunch(true)
 {
-    //ConsoleInit();
     InitializeGameHooks();
     DisableGameHooks();
     InitializeGamePatches();
-    // new std::thread(&Server::PortForwardingThread, this);
 }
 
 Server::~Server()
@@ -124,11 +119,8 @@ DWORD WINAPI Server::PortForwardingThread()
         delete[] buffer;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-
     return 0;
 }
-
-
 
 void Server::Start(const char* level, const char* mode, int maxPlayers)
 {
@@ -140,8 +132,7 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     GameSettings* gameSettings = Settings<GameSettings>("Game");
     gameSettings->Level = const_cast<char*>(level);
-
-    gameSettings->StartPoint = "Offline_WalkerAssault"; //For SinglePlayer Maps
+    gameSettings->StartPoint = "Offline_WalkerAssault";
 
     char* gameMode = new char[strlen(mode) + 11];
     strcpy_s(gameMode, strlen(mode) + 11, "GameMode=");
@@ -152,8 +143,6 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     m_running = true;
     m_hooksRemoved = false;
-
-    
 }
 void MessageManagerDispatchMessageHk(void* inst, Message* message) 
 {
@@ -179,7 +168,7 @@ void MessageManagerDispatchMessageHk(void* inst, Message* message)
     {
         KYBER_LOG(LogLevel::Info, "Game ended, moving to next level");
 
-        //Lol this is a lot
+        //Lol this is so ugly
         auto& mapList = g_program->m_server->m_mapList;
         if (!mapList.empty())
         {
@@ -203,7 +192,6 @@ void MessageManagerDispatchMessageHk(void* inst, Message* message)
         }
 
     }
-    //KYBER_LOG(LogLevel::Debug, "Message:" + name);
     trampoline(inst, message);
 }
 void Kyber::Server::ClientPlayerManagerCtr()
@@ -236,7 +224,6 @@ __int64 ServerStartHk(__int64 inst, ServerSpawnInfo* info, ServerSpawnOverrides*
     return trampoline(inst, info, spawnOverrides);
 }
 
-
 __int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount, int maxSpectatorCount) {
 
     
@@ -268,7 +255,7 @@ void ClientConnectionSendMessageHk(void* inst, Message* message)
         if (type && type->typeInfoData && strcmp(type->getName(), "NetworkCreatePlayerMessage") == 0)
         {
             NetworkCreateJoiningPlayerMessage* msg = (NetworkCreateJoiningPlayerMessage*)message;
-            msg->isSpectator = false;
+            //msg->isSpectator = false; //Could be what sets spectators. I forgot
         }
     }
     trampoline(inst, message);
@@ -277,27 +264,19 @@ void ClientConnectionSendMessageHk(void* inst, Message* message)
 bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessage* message) 
 {
     static const auto trampoline = HookManager::Call(ServerConnectionCreatePlayer);
-
-    std::string playerName = message->playerName;
-    bool TEMP_isJoiningPlayerNotASpectator = true;
-    if (playerName == "Nuuby4") 
-    {
-        TEMP_isJoiningPlayerNotASpectator = true;
-    }
-    if (TEMP_isJoiningPlayerNotASpectator)
+    //@TODO I think this is where players are set to spectator. When doing API/Servers, I'll need to have a lookup thing for join requests
+    if (!message->isSpectator)
     {
         KYBER_LOG(LogLevel::Info, message->playerName << " has joined.");
-        return trampoline(inst, message);
-
     }
-    else{
-        message->isSpectator = true;
+    else
+    {
         KYBER_LOG(LogLevel::Info, message->playerName << " has joined as Spectator.");
-        return trampoline(inst, message);
     }
+    return trampoline(inst, message);
+    
         
 }
-
 
 __int64 SettingsManagerApplyHk(__int64 inst, __int64* a2, char* script, BYTE* a4)
 {
@@ -341,8 +320,6 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
         trampoline(inst, ipAddress, serverPassword);
     }
 }
-
-
 
 void ServerPlayerLeaveIngameHk(ServerPlayer* inst)
 {
@@ -424,13 +401,6 @@ void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* me
     return trampoline(inst, channel, message);
 }
 
-__int64 SettingsCtr(__int64 SettingsManager, __int64 &typeInfo)
-{
-    static const auto trampoline = HookManager::Call(SettingsCtr);
-
-    return trampoline(SettingsManager, typeInfo);
-}
-
 
 HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
@@ -452,17 +422,7 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
     { OFFSET_LOADLEVEL, LoadLevelHk},
     { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk }
-    
-    
-    /*,
-    { OFFSET_CLIENTPLAYERMANAGER, ClientPlayerManagerHk}*/
-    
 };
-
-
-
-
-
 
 void Server::InitializeGameHooks()
 {
@@ -501,14 +461,7 @@ void Server::InitializeGamePatches()
     BYTE ptch2[] = { 0x90, 0x90 };
     MemoryUtils::Patch((void*)(OFFSET_SERVER_PATCH + 0x5), (void*)ptch2, sizeof(ptch2));
 
-   
-
-    HookManager::EnableHook(OFFSET_SERVERPLAYERMANAGER);
-}
-
-void Server::InitializeGamePatches2()
-{
-    BYTE ptch3[] = { 0x90, 0x90, 0x90, 0x90, 0x90 }; 
+    HookManager::EnableHook(OFFSET_SERVERPLAYERMANAGER); //I forgot why I did this lol
 }
 
 void Server::InitializeGameSettings()
@@ -524,12 +477,6 @@ void Server::InitializeGameSettings()
     auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; // Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
     networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
     
-    //KYBER_LOG(LogLevel::Warning, "Network Settings Settings Test : " << std::hex << networkSettings);
-    
-
-
-
-
     gameTimeSettings->TimeScale = 1;
     wsSettings->ForcePrivateMatchLobby = true;
     wsSettings->NoInteractivityTimeoutTime = 600;
@@ -542,15 +489,6 @@ void Server::InitializeGameSettings()
     wsSettings->LobbyThreshold = 1;
     onlineSettings->MatchmakingScenario = "DevUltraQuick";
     onlineSettings->MatchmakingScenarioWithLevel = "DevUltraQuick";
-
-
-
-
-    //KYBER_LOG(LogLevel::Debug, gameSettings->CurrentSKU)
-    //wsSettings->AutoBalanceTeamsOnNeutral = true;
-
-    //AutoPlayerSettings* aiSettings = Settings<AutoPlayerSettings>("AutoPlayers");
-    //aiSettings->AllowSuicide = false;
 }
 
 void Server::Stop() 
