@@ -28,6 +28,7 @@ namespace Kyber
 {
 Program::Program(HMODULE module)
     : m_module(module)
+    , m_console(nullptr)
     , m_server(nullptr)
     , m_clientState(ClientState_None)
     , m_joining(false)
@@ -74,7 +75,7 @@ Program::~Program()
     KYBER_LOG(LogLevel::Info, "Destroying Kyber");
     HookManager::RemoveHooks();
     delete m_server;
-    //delete m_api;
+    delete m_console;
     delete g_renderer;
 }
 
@@ -83,9 +84,11 @@ DWORD WINAPI Program::InitializationThread()
     KYBER_LOG(LogLevel::Info, "Starting");
     InitializeGameHooks();
     KYBER_LOG(LogLevel::Warning, "Special Thanks to BattleDash")
- 
+
+    
     g_renderer = new Renderer();
     m_server = new Server();
+    m_console = new Console();
     m_server->ClientPlayerManagerCtr();
 
     KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);

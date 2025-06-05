@@ -5,6 +5,7 @@
 #include <Core/Server.h>
 #include <SDK/TypeInfo.h>
 #include <API/APIService.h>
+#include <Core/Console.h>
 
 #include <Windows.h>
 
@@ -50,6 +51,7 @@ public:
 
     HMODULE m_module;
     //APIService* m_api;
+    Console* m_console;
     Server* m_server;
     ClientState m_clientState;
     bool m_joining;

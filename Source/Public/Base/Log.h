@@ -1,4 +1,4 @@
-// Copyright BattleDash. All Rights Reserved.
+﻿// Copyright BattleDash. All Rights Reserved.
 
 #pragma once
 
@@ -17,6 +17,7 @@ enum class LogLevel
     DebugPlusPlus,
     Debug,
     Info,
+    Console,
     Warning,
     Error,
     Fatal,
@@ -24,22 +25,22 @@ enum class LogLevel
     Current = Debug
 };
 
-// We need this because we can't use X Macros for LogLevel (#level), or else the output will be "LogLevel::Info",
-// instead of just "Info". If you have a better solution, feel free to make a PR or an issue.
 // clang-format off
 #define KYBER_LOG_LEVEL_TO_STRING(level)                                                                                                   \
     ((level == Kyber::LogLevel::Debug || level == Kyber::LogLevel::DebugPlusPlus) ? "Debug" :                                              \
-    (level == Kyber::LogLevel::Info ? "Info" :                                                                                             \
+    (level == Kyber::LogLevel::Info ? "Info" :                                                                                                \
+    (level == Kyber::LogLevel::Console ? "Console" :                                                                                        \
     (level == Kyber::LogLevel::Warning ? "Warning" :                                                                                       \
     (level == Kyber::LogLevel::Error ? "Error" :                                                                                           \
-    (level == Kyber::LogLevel::Fatal ? "Fatal" : "Unknown")))))
+    (level == Kyber::LogLevel::Fatal ? "Fatal" : "Unknown"))))))
 
 #define KYBER_LOG_LEVEL_COLOR(level)                                                                                                       \
-    ((level == Kyber::LogLevel::Debug || level == Kyber::LogLevel::DebugPlusPlus) ? "\x1B[36m" :                                           \
-    (level == Kyber::LogLevel::Info ? "" :                                                                                                 \
-    (level == Kyber::LogLevel::Warning ? "\x1B[33m" :                                                                                      \
-    (level == Kyber::LogLevel::Error ? "\x1B[31m" :                                                                                        \
-    (level == Kyber::LogLevel::Fatal ? "\x1B[31m" : "")))))
+    ((level == Kyber::LogLevel::Debug || level == Kyber::LogLevel::DebugPlusPlus) ? "\x1B[36m" :                                             \
+    (level == Kyber::LogLevel::Info ? "" :                                                                                                  \
+    (level == Kyber::LogLevel::Console ? "\x1B[32m" :                                                                                        \
+    (level == Kyber::LogLevel::Warning ? "\x1B[33m" :                                                                                        \
+    (level == Kyber::LogLevel::Error ? "\x1B[31m" :                                                                                          \
+    (level == Kyber::LogLevel::Fatal ? "\x1B[31m" : ""))))))
 // clang-format on
 
 #define SHOULD_LOG(level) (level >= Kyber::LogLevel::Current)

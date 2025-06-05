@@ -1,4 +1,4 @@
-// Copyright BattleDash. All Rights Reserved.
+﻿// Copyright BattleDash. All Rights Reserved.
 
 #include <stdint.h>
 #include <Render/Fonts/BattlefrontUIRegular.h>
@@ -332,73 +332,51 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Auto Inject Logic
-        if (autoInjectEnabled)
-        {
-            static int lastAttemptTime = 0;
-            int currentTime = static_cast<int>(glfwGetTime());
-            if (currentTime - lastAttemptTime >= 0.001)
-            {
-                lastAttemptTime = currentTime;
-
-                if (processDetectedTime == -1) // Process not yet detected
-                {
-                    DWORD pid = 0;
-                    HANDLE hProc = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-                    PROCESSENTRY32 pe = { 0 };
-                    pe.dwSize = sizeof(PROCESSENTRY32);
-                    if (Process32First(hProc, &pe))
-                    {
-                        do
-                        {
-                            if (strcmp(pe.szExeFile, "starwarsbattlefront.exe") == 0)
-                            {
-                                pid = pe.th32ProcessID;
-                                processDetectedTime = currentTime; // Mark the detection time
-                                break;
-                            }
-                        } while (Process32Next(hProc, &pe));
-                    }
-                    CloseHandle(hProc);
-                }
-                else if (currentTime - processDetectedTime >= 2) // Inject after 5 seconds
-                {
-                    InjectDLL();               // Inject the DLL
-                    autoInjectEnabled = false; // Disable Auto Inject after success
-                    processDetectedTime = -1;  // Reset detection time
-                }
-            }
-        }
+        
+       
+        static bool isInjecting = false;
+        static float injectStartTS = 0.0f;
+        static std::string status = "Idle";
 
         // ImGui UI
         ImGui::SetNextWindowSize(io.DisplaySize);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
 
         ImGui::Begin("Auric Launcher", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Please Ensure the Kyber.dll is in the same folder as AuricLauncher.exe");
-        ImGui::Text("Click `Auto Inject` Below before you launch your game to properly initialize console commands.");
 
         
+        ImGui::TextWrapped("Please ensure Kyber.dll is next to AuricLauncher.exe.\n"
+                           "Click 'Inject' to start scanning for Battlefront, then inject.");
 
-        //if (ImGui::Button("Auto Inject"))
-        //{
-            
-        //    autoInjectEnabled = true; // Enable auto-injection
-        //    processDetectedTime = -1; // Reset process detection logic
-        //}
         
-        if (ImGui::Button("Manually Inject"))
+        ImGui::Separator();
+        ImGui::Text("Status: %s", status.c_str());
+        ImGui::Separator();
+
+        // Disable the Auto Inject button while "isInjecting" is true
+        if (isInjecting)
+            ImGui::BeginDisabled();
+        if (ImGui::Button("Inject", ImVec2(120, 0)))
         {
-            InjectDLL();
-            //autoInjectEnabled = true;
-            //processDetectedTime = -1;
+            autoInjectEnabled = true;
+            isInjecting = true;
+            status = "Searching for 'starwarsbattlefront.exe'…";
+            processDetectedTime = -1;
+            injectStartTS = static_cast<float>(glfwGetTime());
         }
+        if (isInjecting)
+            ImGui::EndDisabled();
+
+        ImGui::SameLine();
 
         // FPS Display
+        ImGui::Dummy(ImVec2(0, 5));
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
         ImGui::End();
 
         ImGui::Render();
+
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -407,8 +385,51 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
-    }
+        
+        if (autoInjectEnabled)
+        {
+            static int lastAttemptTime = 0;
+            int currentTime = static_cast<int>(glfwGetTime());
+            if (currentTime - lastAttemptTime >= 1) // check ~every 1ms
+            {
+                lastAttemptTime = currentTime;
 
+                // 1) Find the process
+                if (processDetectedTime == -1)
+                {
+                    DWORD pid = 0;
+                    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+                    PROCESSENTRY32 pe = { 0 };
+                    pe.dwSize = sizeof(PROCESSENTRY32);
+                    if (Process32First(snap, &pe))
+                    {
+                        do
+                        {
+                            if (strcmp(pe.szExeFile, "starwarsbattlefront.exe") == 0)
+                            {
+                                pid = pe.th32ProcessID;
+                                processDetectedTime = currentTime; // mark that we saw it
+                                status = "Found Battlefront pid=" + std::to_string(pid) + ". Waiting to inject...";
+                                break;
+                            }
+                        } while (Process32Next(snap, &pe));
+                    }
+                    CloseHandle(snap);
+                }
+                
+                else if (currentTime - processDetectedTime >= 2)
+                {
+                    status = "Injecting DLL…";
+                    InjectDLL();
+
+                    status = "Injection complete!";
+                    autoInjectEnabled = false;
+                    isInjecting = false;
+                    processDetectedTime = -1;
+                }
+            }
+        }
+    }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

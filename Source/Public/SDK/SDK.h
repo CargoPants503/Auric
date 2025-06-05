@@ -91,6 +91,19 @@ public:
 
     //class ServerPlayer* m_players[64]; // 0x00F0 //0x290
     char pad_02F0[1276];               // 0x02F0 // Size: 0x07EC
+
+    ServerPlayer* GetPlayer(const char* name)
+    {
+        for (const auto& player : m_players)
+        {
+            if (player == nullptr)
+                continue;
+
+            if (std::strcmp(player->m_name, name) == 0)
+                return player;
+        }
+        return nullptr;
+    }
 };                                     // Size: 0x07EC
 class ClientPlayerManager
 {

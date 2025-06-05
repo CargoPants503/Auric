@@ -194,7 +194,9 @@ void ServerWindow::Draw()
                     levelStruct.gameMode = gameMode;
 
                     g_program->m_server->LoadLevel(levelStruct);
+
                     KYBER_LOG(LogLevel::Debug, "Loading Level with Level: " << level << " and GameMode: " << gameMode);
+
                     gameSettings->Level = strdup(currentLevel.level);
                     std::string modeString = std::string("GameMode=") + currentMode.mode;
                     gameSettings->DefaultLayerInclusion = strdup(modeString.c_str());
