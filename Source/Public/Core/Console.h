@@ -77,8 +77,5 @@ class Console
 {
 public:
     Console();
-
-    void EnqueueCommand(const char* cmd);
-    void UnregisterCommand(const char* name);
 };
 } // namespace Kyber

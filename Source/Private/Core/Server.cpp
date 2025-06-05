@@ -341,8 +341,6 @@ void LoadLevelHk(ServerLoadLevelStruct a1)
 void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
 {
     static const auto trampoline = HookManager::Call(ServerPlayerSetTeamIdHk);
-    // g_program->m_server->InitializeGamePatches2();
-    KYBER_LOG(LogLevel::Debug, "Set " << std::string(inst->m_name) << "To Team " << teamId);
     trampoline(inst, teamId);
 }
 void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText)
