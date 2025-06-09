@@ -4,7 +4,6 @@
 #include <Core/Server.h>
 #include <Hook/Func.h>
 #include <Core/Program.h>
-//#include <Render/Windows/ServerWindow.h>
 #include <Hook/HookManager.h>
 #include <Base/Log.h>
 #include <Utilities/ErrorUtils.h>
@@ -26,7 +25,7 @@
 
 #define OFFSET_SERVERPLAYER_SETTEAMID HOOK_OFFSET(0x143CBE6F0)
 
-#define OFFSET_SERVERCONNECTION_KICKPLAYER HOOK_OFFSET(0x143C7F140)
+
 #define OFFSET_SERVERPEER_CONNECTIONFORPLAYER HOOK_OFFSET(0x143CD4180)
 #define OFFSET_SERVERCONNECTION_CREATEPLAYER HOOK_OFFSET(0x143C7FBA0)
 #define OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER HOOK_OFFSET(0x143CB1CB0)
@@ -44,6 +43,7 @@
 #define OFFSET_LOADLEVEL HOOK_OFFSET(0x1445049A0)
 #define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
 
+TL_DECLARE_FUNC(0x143C7F140, void*, ServerConnection_KickPlayer, __int64 inst, __int64 reason, const std::string& reasonText);
 
 
 namespace Kyber
@@ -345,10 +345,8 @@ void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
 }
 void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText)
 {
-    static const auto trampoline = HookManager::Call(ServerConnectionKickPlayerHk);
+    ServerConnection_KickPlayer(inst, reason, reasonText);
     KYBER_LOG(LogLevel::Debug, "ServerConnectionKickPlayer called 0x" << reason << " " << reasonText.c_str());
-    
-    trampoline(inst, reason, reasonText.c_str());
 }
 void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message)
 {
@@ -369,7 +367,6 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
     { OFFSET_SERVER_START, ServerStartHk },
     { OFFSET_SERVERPLAYER_SETTEAMID, ServerPlayerSetTeamIdHk },
-    { OFFSET_SERVERCONNECTION_KICKPLAYER, ServerConnectionKickPlayerHk },
     { OFFSET_SERVERPEER_CONNECTIONFORPLAYER, ServerPeerConnectionForPlayerHk },
     { OFFSET_SERVERSENDMESSAGE, SendServerMessageHk },
     { OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER, ServerPlayerManagerDeletePlayerHk },
