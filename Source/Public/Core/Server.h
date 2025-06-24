@@ -3,26 +3,16 @@
 #pragma once
 
 #include <Network/SocketManager.h>
+#include <Base/Log.h>
 #include <SDK/SDK.h>
 #include <SDK/TypeInfo.h>
+#include <SDK/Funcs.h>
 
 #include <Windows.h>
-#include <string>
-
-#define OFFSET_SERVERGAMECONTEXT_INSTANCE 0x142C20A00
-
-#define OFFSET_NETWORK_THING 0x142FBF790
+#include <string> 
 
 namespace Kyber
 {
-
-void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId);
-void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText);
-void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message);
-void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player);
-void LoadLevelHk(ServerLoadLevelStruct a1);
-__int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player);
-
 
 class Server
 {
@@ -34,7 +24,6 @@ public:
     void InitializeGameHooks();
     void EnableGameHooks();
     void DisableGameHooks();
-    //void ConsoleInit();
     void InitializeGamePatches();
     void InitializeGameSettings();
     void ClientPlayerManagerCtr();
@@ -43,62 +32,56 @@ public:
 
     void SetPlayerTeam(ServerPlayer* player, int teamId)
     {
-        return ServerPlayerSetTeamIdHk(player, teamId);
+        return ServerConnection_SetPlayerTeam(player, teamId);
     }
 
     ServerGameContext* GetServerGameContext2()
     {
-        return *reinterpret_cast<ServerGameContext**>(OFFSET_SERVERGAMECONTEXT_INSTANCE);
+        return *reinterpret_cast<ServerGameContext**>(0x142C20A00);
     }
 
     __int64 GetServerGameContext()
     {
-        return *reinterpret_cast<__int64*>(OFFSET_SERVERGAMECONTEXT_INSTANCE);
+        return *reinterpret_cast<__int64*>(0x142C20A00);
     }
 
-    void KickPlayer(ServerPlayer* player, char* reason)
+    void KickPlayer(ServerPlayer* player, char* reason, bool sendKickedMessage)
     {
         __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x70);
-        __int64 serverConnection = ServerPeerConnectionForPlayerHk(serverPeer, player);
-        ServerConnectionKickPlayerHk(serverConnection, SecureReason_KickedByAdmin, std::string(reason));
+        __int64 serverConnection = ServerPeer_ConnectionForPlayer(serverPeer, player);
+        ServerConnection_KickPlayer(serverConnection, SecureReason_KickedByAdmin, std::string(reason));
+
+        if (sendKickedMessage)
+        {
+            std::string message = std::string(player->m_name) + " WAS KICKED BY ADMIN";
+            SendServerMessage_Send(*reinterpret_cast<__int64*>(0x142CE2948), ChatChannel_Game, message.c_str(), player);
+        }
+
+        KYBER_LOG(LogLevel::Info, player->m_name << " was kicked [" << reason << "]");
     }
 
-    void SendKickedMessage(ServerPlayer* inst, const char* name)
-    {
-        std::string message = std::string(name) + " WAS KICKED BY ADMIN";
-        SendServerMessageHk(inst, ChatChannel_Game, message.c_str());
-
-    }
-
-    void BanPlayer(ServerPlayer* player, char* reason)
-    {
-        __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x70);
-        __int64 serverConnection = ServerPeerConnectionForPlayerHk(serverPeer, player);
-        ServerConnectionKickPlayerHk(serverConnection, SecureReason_KickedViaShield, std::string(reason));
-    }
     void LoadLevel(ServerLoadLevelStruct a1)
     {
-        LoadLevelHk(a1);
+        LoadLevel_Setup(a1);
     }
 
-    
-
-
+    //Networking
     SocketManager* m_socketManager;
-    ISocket* m_natClient; // ServerPlayerManager* m_playerManager;
-    EastlServerPlayerManager* m_eastlServerPlayerManager;
+    ISocket* m_natClient;
+
+    //Players
     ServerPlayerManager* m_ServerPlayerManager;
     ClientPlayerManager* m_ClientPlayerManager;
+    
+    //Server
     ServerSpawnOverrides m_serverSpawnOverrides;
     SocketSpawnInfo m_socketSpawnInfo;
     std::vector<MapRotation*> m_mapList;
+
+    //Program
     __int64 m_serverInstance;
     bool m_running;
     bool m_hooksRemoved;
-        // the m_isFirstLaunch basically forces the ClientPlayerManager 
-        // to be visible as soon as the game launches because the client 
-        // state isn't set when is apart of controlling the visiblity
     bool m_isFirstLaunch;
-
 };
 } // namespace Kyber

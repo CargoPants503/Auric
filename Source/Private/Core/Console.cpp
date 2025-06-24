@@ -5,13 +5,10 @@
 #include <Core/Console.h>
 #include <Base/Log.h>
 
-
-
 namespace Kyber
 {
 TL_DECLARE_FUNC(0x14334B160, void, ConsoleRegistry_registerConsoleMethods, const char* groupName, ConsoleMethod* methods, int count);
 
-// Credit BattleDash
 void SetTeamCommand(ConsoleContext& cc)
 {
     auto stream = cc.stream();
@@ -19,8 +16,8 @@ void SetTeamCommand(ConsoleContext& cc)
     int team;
     stream >> playerName >> team;
 
-    
     ServerPlayer* player = g_program->m_server->m_ServerPlayerManager->GetPlayer(playerName.c_str());
+
     if (player == nullptr)
     {
         cc << "Couldn't find player " << playerName;
@@ -35,32 +32,40 @@ void SetTeamCommand(ConsoleContext& cc)
 void LoadLevelCommand(ConsoleContext& cc)
 {
     auto stream = cc.stream();
-    std::string levelPath;
-    std::string gameMode;
+    std::string levelPath, gameMode;
     stream >> levelPath >> gameMode;
-    if (levelPath.empty() || gameMode.empty()){return;}
-
+    if (levelPath.empty() || gameMode.empty())
+        return;
 
     GameSettings* gameSettings = Settings<GameSettings>("Game");
-    if (std::strcmp(gameSettings->Level, "Levels/FrontEnd/FrontEnd") != 0)
-    {   
-        
-        ServerLoadLevelStruct loadLevel;
-        loadLevel.level = levelPath.c_str();
-        loadLevel.gameMode = gameMode.c_str(); //_strdup(("GameMode=" + gameMode).c_str());
-        g_program->m_server->LoadLevel(loadLevel);
-        gameSettings->Level = strdup(loadLevel.level);
-        gameSettings->DefaultLayerInclusion = strdup((std::string("GameMode=") + loadLevel.gameMode).c_str());
-       
-        cc << "Set " << loadLevel.level << " to team " << loadLevel.gameMode;
-        KYBER_LOG(LogLevel::Console, "Loading Level " << loadLevel.level << " " << loadLevel.gameMode);
-    }
-    else
+    constexpr const char* kFrontendLevel = "Levels/FrontEnd/FrontEnd";
+
+    if (std::strcmp(gameSettings->Level, kFrontendLevel) == 0)
     {
-        cc << "Start A Server First!";
-        KYBER_LOG(LogLevel::Console, "Start a server to use this command!");
+        cc << "Start a server first!\n";
+        KYBER_LOG(LogLevel::Console, "LoadLevelCommand failed: server not running");
+        return;
     }
+
+    ServerLoadLevelStruct levelInfo;
+    levelInfo.level = levelPath.c_str();
+    levelInfo.gameMode = gameMode.c_str();
+
+    g_program->m_server->LoadLevel(levelInfo);
+
+    gameSettings->Level = strdup(levelInfo.level);
+    gameSettings->DefaultLayerInclusion = strdup(
+        (std::string("GameMode=") + levelInfo.gameMode).c_str()
+    );
+       
+    cc << "Loading level: " << levelPath
+        << " with mode: " << gameMode << "\n";
+    KYBER_LOG(LogLevel::Console,
+        "LoadLevelCommand: level=" << levelPath 
+        << " mode=" << gameMode
+    );
 }
+
 void RegisterConsoleCommand(StaticConsoleMethodPtr_t func, const char* name, const char* description)
 {
     ConsoleMethod* method = new ConsoleMethod{ func, name, 0, description };

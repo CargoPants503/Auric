@@ -41,7 +41,6 @@ public:
         return reinterpret_cast<T*>(LookupSettingsObjectHk(*reinterpret_cast<__int64*>(OFFSET_GLOBAL_SETTINGS_MANAGER), typeInfo));
     }
 
-
     __int64 ChangeClientState(ClientState currentClientState)
     {
         return ClientStateChangeHk(
@@ -50,7 +49,6 @@ public:
     }
 
     HMODULE m_module;
-    //APIService* m_api;
     Console* m_console;
     Server* m_server;
     ClientState m_clientState;

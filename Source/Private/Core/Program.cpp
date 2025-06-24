@@ -33,7 +33,6 @@ Program::Program(HMODULE module)
     , m_clientState(ClientState_None)
     , m_joining(false)
 {
-    
     InitializePatches();
     KYBER_LOG(LogLevel::Info, "Initialized Game Patches");
 
@@ -55,6 +54,8 @@ Program::Program(HMODULE module)
     SetConsoleMode(stdoutHandle, dwMode);
     SetConsoleTitleA(("Auric v" + KYBER_VERSION).c_str());
     
+    // This is for "safe" starting. If I hook functions too early, the game will crash or will force a sign in that always fails 
+    // Game patches are different, they don't do that. I'm required to make patches to startup functions for console commands
     new std::thread([this]() {
         for (int i = 5; i > 0; --i)
         {
@@ -64,6 +65,7 @@ Program::Program(HMODULE module)
         std::cout << "\r[Kyber-Release] [Info]                                                        \n";
         this->InitializationThread();
     });
+
     KYBER_LOG(LogLevel::Info, " ____           ___       ___            _    ");
     KYBER_LOG(LogLevel::Info, "|  __| ___  __ |_. | ___ | . | ____ -__ | |_   __");
     KYBER_LOG(LogLevel::Info, "| |__ | .'|| _| _| || . ||  _|| . ||   ||  _||_ -| ");
@@ -85,7 +87,6 @@ DWORD WINAPI Program::InitializationThread()
     InitializeGameHooks();
     KYBER_LOG(LogLevel::Warning, "Special Thanks to BattleDash")
 
-    
     g_renderer = new Renderer();
     m_server = new Server();
     m_console = new Console();
@@ -120,6 +121,7 @@ void Program::InitializePatches()
     BYTE alwaysTruePatch[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
     MemoryUtils::Patch((void*)0x143338021, alwaysTruePatch, sizeof(alwaysTruePatch));
     MemoryUtils::Patch((void*)0x143362261, alwaysTruePatch, sizeof(alwaysTruePatch));
+
     BYTE alwaysFalsePatch[2] = { 0xEB, 0x0F };
     MemoryUtils::Patch((void*)0x1432F28C6, alwaysFalsePatch, sizeof(alwaysFalsePatch));
 }
@@ -138,7 +140,7 @@ __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, Client
     static const auto trampoline = HookManager::Call(ClientStateChangeHk);
 
     g_program->m_clientState = currentClientState;
-    g_program->m_server->m_isFirstLaunch = false; //For ServerWindow.cpp UI fixing
+    g_program->m_server->m_isFirstLaunch = false; //Fixes UI that's setup in ServerWindow.cpp
 
     KYBER_LOG(LogLevel::Debug, "Client state changed to " << currentClientState);
     Server* server = g_program->m_server;
@@ -171,11 +173,13 @@ __int64 ClientStateChangeHk(__int64 inst, ClientState currentClientState, Client
     }
     return trampoline(inst, currentClientState, lastClientState);
 }
+
 __int64 LookupSettingsObjectHk(__int64 inst, __int64 typeInfo)
 {
     static const auto trampoline = HookManager::Call(LookupSettingsObjectHk);
     return trampoline(inst, typeInfo);
 }
+
 __int64 GetSettingsObjectHk(__int64 inst, const char* identifier)
 {
     static const auto trampoline = HookManager::Call(GetSettingsObjectHk);

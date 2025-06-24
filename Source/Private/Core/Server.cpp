@@ -1,59 +1,54 @@
 // Copyright BattleDash. All Rights Reserved.
 
 #define _WINSOCKAPI_
+
+#include <Base/Log.h>
+#include <Core/Program.h>
 #include <Core/Server.h>
 #include <Hook/Func.h>
-#include <Core/Program.h>
 #include <Hook/HookManager.h>
-#include <Base/Log.h>
+#include <SDK/Funcs.h>
+#include <SDK/SDK.h>
+#include <SDK/TypeInfo.h>
 #include <Utilities/ErrorUtils.h>
 #include <Utilities/MemoryUtils.h>
 #include <Utilities/PlatformUtils.h>
-#include <SDK/TypeInfo.h>
-#include <SDK/SDK.h>
 
-#include <ws2tcpip.h>
-#include <iomanip>
-#include <iostream>
-#include <minhook/MinHook.h>
-#include <sstream>
 #include <stdio.h>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <thread>
+#include <ws2tcpip.h>
 
+#include <minhook/MinHook.h>
+
+//Client-Server
 #define OFFSET_SERVER_CONSTRUCTOR HOOK_OFFSET(0x143C3D3C0)
 #define OFFSET_SERVER_START HOOK_OFFSET(0x143C466F0)
-
-#define OFFSET_SERVERPLAYER_SETTEAMID HOOK_OFFSET(0x143CBE6F0)
-
-
-#define OFFSET_SERVERPEER_CONNECTIONFORPLAYER HOOK_OFFSET(0x143CD4180)
-#define OFFSET_SERVERCONNECTION_CREATEPLAYER HOOK_OFFSET(0x143C7FBA0)
-#define OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER HOOK_OFFSET(0x143CB1CB0)
-
-#define OFFSET_APPLY_SETTINGS HOOK_OFFSET(0x14334AE20)
-#define OFFSET_CLIENT_INIT_NETWORK HOOK_OFFSET(0x143A97630)
-#define OFFSET_CLIENT_CONNECTTOADDRESS HOOK_OFFSET(0x143B136F0)
-
-#define OFFSET_SERVER_PATCH 0x143A9C8BE
-#define OFFSET_SERVER_PATCH2 HOOK_OFFSET(0x14450A9E0)
-
-#define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
-#define OFFSET_SERVERSENDMESSAGE HOOK_OFFSET(0x144483EF0)
-
-#define OFFSET_LOADLEVEL HOOK_OFFSET(0x1445049A0)
+#define OFFSET_OVERRIDE_SERVERTYPE HOOK_OFFSET(0x14450A9E0)
 #define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
+#define OFFSET_CLIENT_INIT_NETWORK HOOK_OFFSET(0x143A97630)
 
-TL_DECLARE_FUNC(0x143C7F140, void*, ServerConnection_KickPlayer, __int64 inst, __int64 reason, const std::string& reasonText);
+//Players
+#define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
+#define OFFSET_SERVERCONNECTION_CREATEPLAYER HOOK_OFFSET(0x143C7FBA0)
 
+//Settings
+#define OFFSET_APPLY_SETTINGS HOOK_OFFSET(0x14334AE20)
+
+//Debug
+#define OFFSET_CLIENT_CONNECTTOADDRESS HOOK_OFFSET(0x143B136F0)
 
 namespace Kyber
 {
 
+//Credit BattleDash
 TypeCodeEnum TypeInfo::getBasicType() const
 {
     return TypeCodeEnum((typeInfoData->flags >> 5) & 31);
 }
-
+// Credit BattleDash
 const char* TypeInfo::getName() const
 {
     return typeInfoData->name;
@@ -122,78 +117,88 @@ DWORD WINAPI Server::PortForwardingThread()
 void Server::Start(const char* level, const char* mode, int maxPlayers)
 {
     EnableGameHooks();
-    
-    KYBER_LOG(LogLevel::Debug, "set networkSettings")
-    ClientSettings* clientSettings = Settings<ClientSettings>("Client");
-    clientSettings->ServerIp = "";
 
+    ClientSettings* clientSettings = Settings<ClientSettings>("Client");
     GameSettings* gameSettings = Settings<GameSettings>("Game");
+
+    clientSettings->ServerIp = "";
     gameSettings->Level = const_cast<char*>(level);
     gameSettings->StartPoint = "Offline_WalkerAssault";
 
-    char* gameMode = new char[strlen(mode) + 11];
-    strcpy_s(gameMode, strlen(mode) + 11, "GameMode=");
-    strcat_s(gameMode, strlen(mode) + 11, mode);
-    gameSettings->DefaultLayerInclusion = gameMode;
-    
+    std::string gameMode = "GameMode=" + std::string(mode);
+    gameSettings->DefaultLayerInclusion = _strdup(gameMode.c_str());
+
     g_program->ChangeClientState(ClientState_Startup);
 
     m_running = true;
     m_hooksRemoved = false;
 }
+
 void MessageManagerDispatchMessageHk(void* inst, Message* message) 
 {
     static const auto trampoline = HookManager::Call(MessageManagerDispatchMessageHk);
-    if (message == nullptr)
+
+    if (!message)
     {
         return;
     }
+
     TypeInfo* type = message->getType();
-    if (type == nullptr || type->typeInfoData == nullptr)
+    if (!type || !type->typeInfoData)
     {
         trampoline(inst, message);
-        return; 
+        return;
     }
-    if (type && type->typeInfoData && strcmp(type->getName(), "NetworkCreatePlayerMessage") == 0)
+
+    std::string typeName = type->getName();
+
+    if (typeName == "NetworkCreatePlayerMessage")
     {
         NetworkCreateJoiningPlayerMessage* msg = (NetworkCreateJoiningPlayerMessage*)message;
-        msg->isSpectator = false;
+        msg->isSpectator = false; // Basically this is one place to set a player to spectator
     }
-    std::string name = type->getName();
-    
-    if (name == "ServerLevelCompletedMessage")
+
+    // Triggers Map Rotation
+    if (typeName == "ServerLevelCompletedMessage")
     {
         KYBER_LOG(LogLevel::Info, "Game ended, moving to next level");
 
-        //Lol this is so ugly
         auto& mapList = g_program->m_server->m_mapList;
+        GameSettings* gameSettings = Settings<GameSettings>("Game");
+
+        ServerLoadLevelStruct loadLevelStruct;
+
         if (!mapList.empty())
         {
-            GameSettings* gameSettings = Settings<GameSettings>("Game");
-            MapRotation* map = mapList[0];
-            ServerLoadLevelStruct loadLevelStruct;
+            // This uses my own struct to store the map rotation, this just removes the one it's about to load and sets the gameSettings for it
+            MapRotation* map = mapList.front();
             loadLevelStruct.level = map->Level;
             loadLevelStruct.gameMode = map->GameMode;
-            LoadLevelHk(loadLevelStruct);
+
+            LoadLevel_Setup(loadLevelStruct);
+
+            // Setting the gamesettings is crucial because the restart level button relies on the gameSettings to load know what level to load
             gameSettings->Level = strdup(map->Level);
-            gameSettings->DefaultLayerInclusion = strdup((std::string("GameMode=") + map->GameMode).c_str());
+            gameSettings->DefaultLayerInclusion = strdup(("GameMode=" + std::string(map->GameMode)).c_str());
+
             delete map;
             mapList.erase(mapList.begin());
         }
-        else {
-            GameSettings* gameSettings = Settings<GameSettings>("Game");
-            ServerLoadLevelStruct loadLevelStruct;
+        else
+        {
             loadLevelStruct.level = gameSettings->Level;
             loadLevelStruct.gameMode = gameSettings->DefaultLayerInclusion;
-            LoadLevelHk(loadLevelStruct);
+            LoadLevel_Setup(loadLevelStruct);
         }
-
     }
+
     trampoline(inst, message);
 }
+
+//@TODO Re-do this or setup somewhere else
 void Kyber::Server::ClientPlayerManagerCtr()
 {
-    KYBER_LOG(LogLevel::Debug, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
+    KYBER_LOG(LogLevel::DebugPlusPlus, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
 
     ClientPlayerManager* playerManager = ClientGameContext::Get()->GetPlayerManager();
 
@@ -204,42 +209,39 @@ __int64 ServerCtorHk(__int64 inst, ServerSpawnInfo& info, SocketManager* socketM
 {
     static const auto trampoline = HookManager::Call(ServerCtorHk);
 
-    g_program->m_server->m_serverInstance = inst;
+    KYBER_LOG(LogLevel::DebugPlusPlus, "Info: " << std::hex << reinterpret_cast<uintptr_t>(&info));
+    KYBER_LOG(LogLevel::DebugPlusPlus, "ServerSpawnInfo: " << std::hex << reinterpret_cast<uintptr_t>(&info));
+
     info.isCoop = false;
-    info.isLocalHost = false;
+    info.isMenu = true;
+    info.keepResources = false;
+    g_program->m_server->m_serverInstance = inst;
 
     return trampoline(inst, info, socketManager);
-    ;
 }
 
 __int64 ServerStartHk(__int64 inst, ServerSpawnInfo* info, ServerSpawnOverrides* spawnOverrides)
 {
-
     static const auto trampoline = HookManager::Call(ServerStartHk);
     Server* server = g_program->m_server;
     spawnOverrides->socketManager = (__int64)server->m_socketManager;
     return trampoline(inst, info, spawnOverrides);
 }
 
-__int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount, int maxSpectatorCount) {
-
-    
+//@TODO Instead of hooking the constructor, set up ServerContext struct to get ServerPlayerManager instead, much more stable/reliable
+__int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount, int maxSpectatorCount) 
+{
     static const auto trampoline = HookManager::Call(ServerPlayerManagerHk);
+
     __int64 result = trampoline(inst, playerData, maxPlayerCount, maxSpectatorCount);
 
     g_program->m_server->m_ServerPlayerManager = reinterpret_cast<ServerPlayerManager*>(result);
+
     if (reinterpret_cast<ServerPlayerManager*>(result))
     {
         KYBER_LOG(LogLevel::Debug, "PlayerManager: 0x" << std::hex << reinterpret_cast<ServerPlayerManager*>(result));
     }
-    return result;
-}
 
-__int64 __fastcall ClientPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount)
-{
-    
-    static const auto trampoline = HookManager::Call(ClientPlayerManagerHk);
-    __int64 result = trampoline(inst, playerData, maxPlayerCount);
     return result;
 }
 
@@ -252,7 +254,7 @@ void ClientConnectionSendMessageHk(void* inst, Message* message)
         if (type && type->typeInfoData && strcmp(type->getName(), "NetworkCreatePlayerMessage") == 0)
         {
             NetworkCreateJoiningPlayerMessage* msg = (NetworkCreateJoiningPlayerMessage*)message;
-            //msg->isSpectator = false; //Could be what sets spectators. I forgot
+            //msg->isSpectator = false; //I forget if it's this or if it's the MessageManager one that sets spectators
         }
     }
     trampoline(inst, message);
@@ -261,15 +263,14 @@ void ClientConnectionSendMessageHk(void* inst, Message* message)
 bool ServerConnectionCreatePlayer(__int64 inst, NetworkCreateJoiningPlayerMessage* message) 
 {
     static const auto trampoline = HookManager::Call(ServerConnectionCreatePlayer);
-    //@TODO I think this is where players are set to spectator. When doing API/Servers, I'll need to have a lookup thing for join requests
-    if (!message->isSpectator)
+    //@TODO I think this is where players are set to spectator. When working on proxy servers messages will need to be set when sent to the host
+    if (message->isSpectator)
     {
-        KYBER_LOG(LogLevel::Info, message->playerName << " has joined.");
-    }
-    else
-    {
-        KYBER_LOG(LogLevel::Info, message->playerName << " has joined as Spectator.");
-    }
+        KYBER_LOG(LogLevel::Info, message->playerName << " joined as Spectator");
+        return trampoline(inst, message);
+    }    
+
+    KYBER_LOG(LogLevel::Info, message->playerName << " joined");
     return trampoline(inst, message);
 }
 
@@ -282,7 +283,6 @@ __int64 SettingsManagerApplyHk(__int64 inst, __int64* a2, char* script, BYTE* a4
         server->m_hooksRemoved = true;
         server->DisableGameHooks();
     }
-    KYBER_LOG(LogLevel::DebugPlusPlus, "SettingsManagerApplyHk(" << script << ")");
     if (strstr(script, "InstallationLevel"))
     {
         return 0;
@@ -295,7 +295,6 @@ bool ClientInitNetworkHk(__int64 inst, bool singleplayer, bool localhost, bool c
     static const auto trampoline = HookManager::Call(ClientInitNetworkHk);
     if (g_program->m_server->m_running || strlen(Settings<ClientSettings>("Client")->ServerIp) > 0)
     {
-        printf("%p\n", inst);
         *reinterpret_cast<__int64*>(inst + 0xB8) =
             reinterpret_cast<__int64>(new SocketManagerCreator(g_program->m_server->m_socketSpawnInfo));
     }
@@ -315,68 +314,22 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
         trampoline(inst, ipAddress, serverPassword);
     }
 }
-__int64 ServerPeerConnectionForPlayerHk(__int64 inst, ServerPlayer* player)
+
+__int64 ServerPatch2Hk(__int64 inst) 
 {
-    static const auto trampoline = HookManager::Call(ServerPeerConnectionForPlayerHk);
-    return trampoline(inst, player);
-}
-__int64 ServerPatch2Hk(__int64 inst) {
 
     return 3;
 }
 
-void ServerPlayerManagerDeletePlayerHk(ServerPlayerManager* inst, ServerPlayer* player)
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerManagerDeletePlayerHk);
-    KYBER_LOG(LogLevel::DebugPlusPlus, "ServerPlayerManagerDeletePlayer called");
-    trampoline(inst, player);
-}
-
-void LoadLevelHk(ServerLoadLevelStruct a1)
-{
-    static const auto trampoline = HookManager::Call(LoadLevelHk);
-    trampoline(a1);
-}
-
-void ServerPlayerSetTeamIdHk(ServerPlayer* inst, int teamId)
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerSetTeamIdHk);
-    trampoline(inst, teamId);
-}
-void ServerConnectionKickPlayerHk(__int64 inst, __int64 reason, const std::string& reasonText)
-{
-    ServerConnection_KickPlayer(inst, reason, reasonText);
-    KYBER_LOG(LogLevel::Debug, "ServerConnectionKickPlayer called 0x" << reason << " " << reasonText.c_str());
-}
-void SendServerMessageHk(ServerPlayer* inst, ChatChannel channel, const char* message)
-{
-    static const auto trampoline = HookManager::Call(SendServerMessageHk);
-
-    if (!(message && inst))
-    {
-        return;
-    }
-
-    KYBER_LOG(LogLevel::Debug, " a1: " << inst << " channel: " << channel << " message: " << message);
-
-    return trampoline(inst, channel, message);
-}
-
-
 HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_CONSTRUCTOR, ServerCtorHk },
     { OFFSET_SERVER_START, ServerStartHk },
-    { OFFSET_SERVERPLAYER_SETTEAMID, ServerPlayerSetTeamIdHk },
-    { OFFSET_SERVERPEER_CONNECTIONFORPLAYER, ServerPeerConnectionForPlayerHk },
-    { OFFSET_SERVERSENDMESSAGE, SendServerMessageHk },
-    { OFFSET_SERVERPLAYERMANAGER_DELETEPLAYER, ServerPlayerManagerDeletePlayerHk },
     { OFFSET_APPLY_SETTINGS, SettingsManagerApplyHk },
     { OFFSET_CLIENT_INIT_NETWORK, ClientInitNetworkHk },
     { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
-    { OFFSET_SERVER_PATCH2, ServerPatch2Hk},
+    { OFFSET_OVERRIDE_SERVERTYPE, ServerPatch2Hk},
     { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk},
     { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
-    { OFFSET_LOADLEVEL, LoadLevelHk},
     { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk }
 };
 
@@ -395,7 +348,7 @@ void Server::EnableGameHooks()
 {
     HookManager::EnableHook(OFFSET_SERVER_CONSTRUCTOR);
     HookManager::EnableHook(OFFSET_SERVER_START);
-    HookManager::EnableHook(OFFSET_SERVER_PATCH2);
+    HookManager::EnableHook(OFFSET_OVERRIDE_SERVERTYPE);
     HookManager::EnableHook(HOOK_OFFSET(0x143B136F0)); // 0x143B136F0
     Hook::ApplyQueuedActions();
     KYBER_LOG(LogLevel::Debug, "Enabled Server Hooks");
@@ -413,11 +366,10 @@ void Server::DisableGameHooks()
 void Server::InitializeGamePatches()
 {
     BYTE ptch[] = { 0xB9, 0x01, 0x00, 0x00, 0x00 };
-    MemoryUtils::Patch((void*)OFFSET_SERVER_PATCH, (void*)ptch, sizeof(ptch));
+    MemoryUtils::Patch((void*)0x143A9C8BE, (void*)ptch, sizeof(ptch));
     BYTE ptch2[] = { 0x90, 0x90 };
-    MemoryUtils::Patch((void*)(OFFSET_SERVER_PATCH + 0x5), (void*)ptch2, sizeof(ptch2));
-
-    HookManager::EnableHook(OFFSET_SERVERPLAYERMANAGER); //I forgot why I did this lol
+    MemoryUtils::Patch((void*)(0x143A9C8BE + 0x5), (void*)ptch2, sizeof(ptch2));
+    HookManager::EnableHook(OFFSET_SERVERPLAYERMANAGER);
 }
 
 void Server::InitializeGameSettings()
@@ -433,6 +385,7 @@ void Server::InitializeGameSettings()
     auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; // Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
     networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
     
+    networkSettings->MaxClientCount = 40;
     gameTimeSettings->TimeScale = 1;
     wsSettings->ForcePrivateMatchLobby = true;
     wsSettings->NoInteractivityTimeoutTime = 600;

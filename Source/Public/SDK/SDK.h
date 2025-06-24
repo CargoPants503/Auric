@@ -11,7 +11,6 @@
 #include <vector>
 
 //Type Info Offsets
-
 #define OFFSET_TYPEINFO_GAMESETTINGS 0x142FC5EC0
 #define OFFSET_TYPEINFO_NETWORKSETTINGS 0x142FBF790
 #define OFFSET_TYPEINFO_SYNCEDGAME 0x142FC5E60
@@ -23,7 +22,6 @@
 #define OFFSET_TYPEINFO_GAMERENDERSETTINGS 0x142FE8D30
 #define OFFSET_TYPEINFO_ONLINESETTINGS 0x142FFE600
 #define OFFSET_TYPEINFO_ORIGINSETTINGS 0x142FFF7D0
-
 
 namespace Kyber
 {
@@ -43,6 +41,7 @@ struct ServerSpawnOverrides
     __int64 connectionCreator;
     __int64 peerCreator;
 };
+
 class ServerPlayer
 {
 public:
@@ -56,26 +55,7 @@ public:
     char pad_0039[31];  // 0x0039
     int32_t m_teamId;   // 0x0058
     char pad_005C[496]; // 0x005C
-
 }; // Size: 0x024C
-
-
-class EastlServerPlayerManager
-{
-public:
-    char pad_0000[8];               // 0x0000
-    class PlayerData* m_playerData; // 0x0008
-    uint32_t m_maxPlayerCount;      // 0x0010
-    uint32_t m_playerCountBitCount; // 0x0014
-    uint32_t m_playerIdBitCount;    // 0x0018
-    char pad_001C[628];             // 0x001C
-    //ServerPlayer* m_players[64];
-    eastl::fixed_vector<ServerPlayer*, 64> m_players; // 0x00C8
-
-    // class ServerPlayer* m_players[64]; // 0x00F0 //0x290
-    char pad_02F0[1276]; // 0x02F0 // Size: 0x07EC
-};
-
 
 class ServerPlayerManager
 {
@@ -87,10 +67,8 @@ public:
     uint32_t m_playerIdBitCount;       // 0x0018
     char pad_001C[628];                // 0x001C
     ServerPlayer* m_players[64];
-    //eastl::fixed_vector<ServerPlayer*, 64> m_players; // 0x00C8
 
-    //class ServerPlayer* m_players[64]; // 0x00F0 //0x290
-    char pad_02F0[1276];               // 0x02F0 // Size: 0x07EC
+    char pad_02F0[1276];
 
     ServerPlayer* GetPlayer(const char* name)
     {
@@ -105,6 +83,7 @@ public:
         return nullptr;
     }
 };                                     // Size: 0x07EC
+
 class ClientPlayerManager
 {
 public:
@@ -114,11 +93,12 @@ public:
     uint32_t m_playerCountBitCount; // 0x0014
     uint32_t m_playerIdBitCount;    // 0x0018
     char pad_001C[224];
-    // Technically the players, spectators, have their own structure but they're similar enough that I can use the ServerPlayer
+    // Technically the players, spectators, have their own struct but they're similar enough to where I can use the ServerPlayer
     ServerPlayer* m_players[64]; // 0x0100 
     ServerPlayer* m_spectators[64];
     ServerPlayer* m_localPlayers[64];
 };
+
 class NetworkCreateJoiningPlayerMessage
 {
 public:
@@ -126,7 +106,6 @@ public:
     char* playerName;
     bool isSpectator;
 };
-
 
 //All credit for TypeInfo goes to BattleDash
 enum TypeCodeEnum : uint16_t
@@ -150,7 +129,7 @@ enum TypeCodeEnum : uint16_t
     kTypeCode_Float32 = 19,
     kTypeCode_Float64 = 20,
 };
-// All credit for TypeInfo goes to BattleDash
+
 struct TypeObject
 {
     virtual class TypeInfo* getType() const = 0;
@@ -158,7 +137,7 @@ struct TypeObject
 protected:
     virtual ~TypeObject() = default;
 };
-// All credit for TypeInfo goes to BattleDash
+
 class MemberInfoData
 {
 public:
@@ -172,13 +151,13 @@ public:
         return (flags & kFlagIsBlittable) == kFlagIsBlittable;
     }
 }; // Size: 0x000A
-// All credit for TypeInfo goes to BattleDash
+
 class TestList
 {
 public:
     char pad_0000[136]; // 0x0000
 };
-// All credit for TypeInfo goes to BattleDash
+
 class ModuleInfo
 {
 public:
@@ -186,7 +165,7 @@ public:
     class ModuleInfo* nextModule; // 0x0008
     class TestList* testList;     // 0x0010
 };
-// All credit for TypeInfo goes to BattleDash
+
 class TypeInfoData : public MemberInfoData
 {
 public:
@@ -198,7 +177,7 @@ public:
     uint16_t fieldCount;           // 0x0022
     uint32_t signature;            // 0x0024
 };
-// All credit for TypeInfo goes to BattleDash
+
 class TypeInfo
 {
 public:
@@ -216,17 +195,15 @@ public:
     TypeCodeEnum getBasicType() const;
     const char* getName() const;
 
-    //std::string toString(const void* data) const;
-
-    //bool isKindOf(const TypeInfo* other) const;
 }; // Size: 0x0008
-// All credit for TypeInfo goes to BattleDash
+
 class Message : public TypeObject
 {
 public:
     const int category;
     const int type;
 };
+
 class ClientGameContext
 {
 public: 
@@ -250,48 +227,20 @@ public:
         return *(ClientGameContext**)0x142AE8080;
     }
 };
+
 class OnlineId
 {
 public:
     uint64_t m_nativeData; // 0x0000
     char m_id[16];         // 0x0008
 };
-/*
-class ClientPlayer
-{
-public:
-    virtual void unk1(){};
-    class PlayerData* m_data;         // 0x0008
-    class MemoryArena* m_memoryArena; // 0x0010
-    const char* m_name;               // 0x0018
-    char pad_0020[24];                // 0x0020
-    LocalPlayerId m_localPlayerId;
-    uint32_t m_analogInputEnableMask;
-    uint64_t m_digitalInputEnableMask;
-    char pad_0048[16]; // 0x0048
-    int32_t m_teamId;  // 0x0058
-    char pad[4];
-    OnlineId m_onlineId;
-    char pad_005C[392];                               // 0x005C
-    class AttachedControllable* attachedControllable; // 0x0200
-    char pad_0208[8];                                 // 0x0208
 
-    // Beware that this may not actually be a soldier entity.
-    // Always check if the type equals "WSClientSoldierEntity"
-    // before using fields specific to that type.
-    class ClientSoldierEntity* controlledControllable; // 0x0210
-
-    char pad_0218[16];                                // 0x0218
-    class ClientCameraViewManager* cameraViewManager; // 0x0228
-};
-*/
 class ServerGameContext
 {
 public:
     char pad_0000[104];
-    EastlServerPlayerManager* m_eastlServerPlayerManager;
+    ServerPlayerManager* m_ServerPlayerManager;
 };
-
 
 class MemoryArena
 {
@@ -301,14 +250,14 @@ public:
 
 struct ServerSpawnInfo
 {
-    ServerSpawnInfo(LevelSetup& setup)
+    ServerSpawnInfo(LevelSetup* setup)
         : levelSetup(setup)
     {}
 
     void* fileSystem = nullptr;
     void* damageArbitrator = nullptr;
     ServerPlayerManager* playerManager = nullptr;
-    LevelSetup& levelSetup;
+    LevelSetup* levelSetup;
     unsigned int tickFrequency = 0;
     bool isSinglePlayer = false;
     bool isLocalHost = false;
@@ -321,6 +270,7 @@ struct ServerSpawnInfo
     void* serverCallbacks = nullptr;
     void* runtimeModules = nullptr;
 };
+
 class ServerLoadLevelStruct
 {
 public:
@@ -328,6 +278,7 @@ public:
     const char* level;
     const char* gameMode;
 };
+
 struct PlayerData2
 {
     void* returnAddress;                  // Offset 0x0000: Unknown pointer (return address)
@@ -350,6 +301,7 @@ struct SocketSpawnInfo
     const char* serverMode;
     const char* serverLevel;
 };
+
 struct MapRotation
 {
 public:

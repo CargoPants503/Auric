@@ -24,30 +24,40 @@ bool ServerWindow::IsEnabled()
 
 bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index, bool isHoster)
 {
-    if (playerList.size() <= index)
+    if (index < 0 || index >= static_cast<int>(playerList.size()))
     {
         return false;
     }
-    ServerPlayer* player = playerList[index];
-    std::string playerInfo = std::string(player->m_name) + "  " + std::to_string(player->m_id);
-    ImGui::Text("%s", playerInfo.c_str());
 
-    ImGui::SameLine();
-    if (isHoster) {
-        if (ImGui::SmallButton(("SWAP TEAM##" + std::string(player->m_name)).c_str()))
-        {
-            g_program->m_server->SetPlayerTeam(player, *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC) == 1 ? 2 : 1);
-        }
-        ImGui::SameLine();
-        if (ImGui::SmallButton(("KICK##" + std::string(player->m_name)).c_str()))
-        {
-            g_program->m_server->KickPlayer(player, "You have been kicked.");
-            g_program->m_server->SendKickedMessage(player, player->m_name);
-        }
+    ServerPlayer* player = playerList[index];
+    if (!player || !player->m_name)
+    {
+        return false;
     }
 
-    
-   
+    std::string playerName(player->m_name);
+    std::string playerInfo = playerName + "  " + std::to_string(player->m_id);
+    ImGui::Text("%s", playerInfo.c_str());
+
+    if (!isHoster)
+        return true;
+
+    ImGui::SameLine();
+    std::string swapLabel = "SWAP TEAM##" + playerName;
+    if (ImGui::SmallButton(swapLabel.c_str()))
+    {
+        // In SWBF, player extents form an intrusive linked list of a player’s settings. While less stable, reading 0x2BAC is much easier
+        uint32_t team = *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC);
+        g_program->m_server->SetPlayerTeam(player, team == 1 ? 2 : 1);
+    }
+
+    ImGui::SameLine();
+    std::string kickLabel = "KICK##" + playerName;
+    if (ImGui::SmallButton(kickLabel.c_str()))
+    {
+        g_program->m_server->KickPlayer(player, "You have been kicked.", true);
+    }
+
     return true;
 }
 
