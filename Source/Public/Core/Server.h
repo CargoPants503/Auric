@@ -26,28 +26,23 @@ public:
     void DisableGameHooks();
     void InitializeGamePatches();
     void InitializeGameSettings();
-    void ClientPlayerManagerCtr();
     void Start(const char* level, const char* mode, int maxPlayers);
     void Stop();
+
+    void LoadLevel(ServerLoadLevelStruct a1)
+    {
+        LoadLevel_Setup(a1);
+    }
 
     void SetPlayerTeam(ServerPlayer* player, int teamId)
     {
         return ServerConnection_SetPlayerTeam(player, teamId);
     }
 
-    ServerGameContext* GetServerGameContext2()
-    {
-        return *reinterpret_cast<ServerGameContext**>(0x142C20A00);
-    }
-
-    __int64 GetServerGameContext()
-    {
-        return *reinterpret_cast<__int64*>(0x142C20A00);
-    }
-
     void KickPlayer(ServerPlayer* player, char* reason, bool sendKickedMessage)
     {
-        __int64 serverPeer = *reinterpret_cast<__int64*>(GetServerGameContext() + 0x70);
+        ServerGameContext* context = ServerGameContext::Get();
+        __int64 serverPeer = context->serverPeer;
         __int64 serverConnection = ServerPeer_ConnectionForPlayer(serverPeer, player);
         ServerConnection_KickPlayer(serverConnection, SecureReason_KickedByAdmin, std::string(reason));
 
@@ -60,19 +55,10 @@ public:
         KYBER_LOG(LogLevel::Info, player->m_name << " was kicked [" << reason << "]");
     }
 
-    void LoadLevel(ServerLoadLevelStruct a1)
-    {
-        LoadLevel_Setup(a1);
-    }
-
     //Networking
     SocketManager* m_socketManager;
     ISocket* m_natClient;
 
-    //Players
-    ServerPlayerManager* m_ServerPlayerManager;
-    ClientPlayerManager* m_ClientPlayerManager;
-    
     //Server
     ServerSpawnOverrides m_serverSpawnOverrides;
     SocketSpawnInfo m_socketSpawnInfo;

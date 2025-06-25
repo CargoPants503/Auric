@@ -249,9 +249,6 @@ HRESULT PresentHk(IDXGISwapChain* pInstance, UINT syncInterval, UINT flags)
 
     Kyber::DebugRenderer::RenderDebug();
     
-    
-
-
     return trampoline(pInstance, syncInterval, flags);
 }
 

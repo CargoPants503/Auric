@@ -57,8 +57,6 @@ Server::Server()
     : m_socketSpawnInfo(SocketSpawnInfo(false, "", ""))
     , m_socketManager(new SocketManager(ProtocolDirection::Clientbound, SocketSpawnInfo(false, "", "")))
     , m_natClient(nullptr)
-    , m_ServerPlayerManager(nullptr)
-    , m_ClientPlayerManager(nullptr)
     , m_running(false)
     , m_hooksRemoved(false)
     , m_serverInstance(0)
@@ -195,16 +193,6 @@ void MessageManagerDispatchMessageHk(void* inst, Message* message)
     trampoline(inst, message);
 }
 
-//@TODO Re-do this or setup somewhere else
-void Kyber::Server::ClientPlayerManagerCtr()
-{
-    KYBER_LOG(LogLevel::DebugPlusPlus, "ClientGameContext: 0x" << std::hex << reinterpret_cast<uintptr_t>(ClientGameContext::Get()));
-
-    ClientPlayerManager* playerManager = ClientGameContext::Get()->GetPlayerManager();
-
-    g_program->m_server->m_ClientPlayerManager = reinterpret_cast<ClientPlayerManager*>(playerManager);
-}
-
 __int64 ServerCtorHk(__int64 inst, ServerSpawnInfo& info, SocketManager* socketManager)
 {
     static const auto trampoline = HookManager::Call(ServerCtorHk);
@@ -226,23 +214,6 @@ __int64 ServerStartHk(__int64 inst, ServerSpawnInfo* info, ServerSpawnOverrides*
     Server* server = g_program->m_server;
     spawnOverrides->socketManager = (__int64)server->m_socketManager;
     return trampoline(inst, info, spawnOverrides);
-}
-
-//@TODO Instead of hooking the constructor, set up ServerContext struct to get ServerPlayerManager instead, much more stable/reliable
-__int64 __fastcall ServerPlayerManagerHk(__int64 inst, __int64 playerData, unsigned int maxPlayerCount, int maxSpectatorCount) 
-{
-    static const auto trampoline = HookManager::Call(ServerPlayerManagerHk);
-
-    __int64 result = trampoline(inst, playerData, maxPlayerCount, maxSpectatorCount);
-
-    g_program->m_server->m_ServerPlayerManager = reinterpret_cast<ServerPlayerManager*>(result);
-
-    if (reinterpret_cast<ServerPlayerManager*>(result))
-    {
-        KYBER_LOG(LogLevel::Debug, "PlayerManager: 0x" << std::hex << reinterpret_cast<ServerPlayerManager*>(result));
-    }
-
-    return result;
 }
 
 void ClientConnectionSendMessageHk(void* inst, Message* message)
@@ -328,7 +299,6 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_CLIENT_INIT_NETWORK, ClientInitNetworkHk },
     { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
     { OFFSET_OVERRIDE_SERVERTYPE, ServerPatch2Hk},
-    { OFFSET_SERVERPLAYERMANAGER, ServerPlayerManagerHk},
     { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
     { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk }
 };
@@ -403,8 +373,6 @@ void Server::InitializeGameSettings()
 void Server::Stop() 
 {
     m_running = false;
-    m_ServerPlayerManager = nullptr;
-    m_ClientPlayerManager = nullptr;
     UDPSocket* socket = m_socketManager->m_sockets.back();
     if (socket != m_natClient)
     {

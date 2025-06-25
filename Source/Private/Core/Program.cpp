@@ -90,7 +90,6 @@ DWORD WINAPI Program::InitializationThread()
     g_renderer = new Renderer();
     m_server = new Server();
     m_console = new Console();
-    m_server->ClientPlayerManagerCtr();
 
     KYBER_LOG(LogLevel::Info, "Initialized Auric v" << KYBER_VERSION);
     KYBER_LOG(LogLevel::Warning, "Press [INSERT] on your Keyboard to use Auric!");

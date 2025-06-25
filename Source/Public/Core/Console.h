@@ -2,6 +2,7 @@
 
 #include <SDK/SDK.h>
 #include <SDK/TypeInfo.h>
+#include <Core/DebugRenderer.h>
 
 #include <string>
 #include <sstream>

@@ -61,46 +61,44 @@ bool DrawScoreboardPlayer(std::vector<ServerPlayer*> playerList, int index, bool
     return true;
 }
 
-void ServerWindow::Draw()
+bool DrawMapRotation() 
 {
-    ImGui::Begin("SERVER SETTINGS", &m_isEnabled, ImGuiWindowFlags_AlwaysAutoResize);
-    GameSettings* gameSettings = Settings<GameSettings>("Game");
-    ImGui::Text("GAME MODE:");
-    ImGui::SameLine();
-    ImGui::Text(gameSettings->DefaultLayerInclusion);
-    ImGui::Text("LEVEL:");
-    ImGui::SameLine();
-    ImGui::Text(gameSettings->Level);
-    ImGui::Separator();
-
     ImGui::Text("----- Map Rotation ----- ");
 
     auto& mapList = g_program->m_server->m_mapList;
 
     if (mapList.empty())
     {
-        ImGui::Text("No Maps in Map Rotation. Start a Server to begin adding.");
+        ImGui::Text("No Maps in Map Rotation. Start a server first");
     }
+
     else
     {
         for (int i = 0; i < mapList.size(); ++i)
         {
             MapRotation* map = mapList[i];
 
-            // Text and buttons on the same line
             ImGui::Text("Map: %s | Mode: %s", map->Name, map->GameMode);
             ImGui::SameLine(450);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+
+            // Move the map up in the rotation
             if (ImGui::Button(("UP##" + std::to_string(i)).c_str()) && i > 0)
             {
                 std::swap(mapList[i], mapList[i - 1]);
             }
+
             ImGui::SameLine();
+            
+            // Move the map down in the rotation
             if (ImGui::Button(("DOWN##" + std::to_string(i)).c_str()) && i < mapList.size() - 1)
             {
                 std::swap(mapList[i], mapList[i + 1]);
             }
+
             ImGui::SameLine();
+
+            // Remove the map from the rotation
             if (ImGui::Button(("X##" + std::to_string(i)).c_str()))
             {
                 delete mapList[i];
@@ -111,9 +109,32 @@ void ServerWindow::Draw()
             ImGui::PopStyleVar();
         }
     }
+}
 
+void ServerWindow::Draw()
+{
+    ImGui::Begin("SERVER SETTINGS", &m_isEnabled, ImGuiWindowFlags_AlwaysAutoResize);
 
+    GameSettings* gameSettings = Settings<GameSettings>("Game");
 
+    ImGui::Text("GAME MODE:");
+    ImGui::SameLine();
+    ImGui::Text(gameSettings->DefaultLayerInclusion);
+    ImGui::Text("LEVEL:");
+    ImGui::SameLine();
+    ImGui::Text(gameSettings->Level);
+    ImGui::Separator();
+
+    DrawMapRotation();
+
+    ServerPlayerManager* serverPlayerManager = ServerGameContext::Get()->GetPlayerManager();
+    ClientPlayerManager* clientPlayerManager = ClientGameContext::Get()->GetPlayerManager();
+
+    // A ServerPlayerManager doesn't Always exist, unlike the ClientPlayerManager.
+    // Have it display a serverPlayerManager when possible you need to see if a player exists
+    // because you can have a pointer to where the serverPlayerManager is supposed to be without
+    // a ServerPlayerManager actually existing
+    
     if (g_program->m_clientState == 12 || g_program->m_server->m_isFirstLaunch)
     {
         static GameMode currentMode = { "", "Mode", {}, {} };
@@ -219,6 +240,7 @@ void ServerWindow::Draw()
             {
                 g_program->m_server->m_mapList.push_back(new MapRotation{ currentLevel.level, currentMode.mode, currentLevel.name });
             }
+            ImGui::SameLine();
             if (ImGui::Button("Restart Level"))
             {
                 ServerLoadLevelStruct levelStruct;
@@ -242,124 +264,106 @@ void ServerWindow::Draw()
             }
         }       
     }
-    if (g_program->m_clientState) // default: else if
+    
+    if (serverPlayerManager->m_players[0] != nullptr)
     {
-        ImGui::Separator();
-        ImGui::Text("PLAYER LIST");
+        std::map<int32_t, std::vector<ServerPlayer*>> players;
 
-        ServerPlayerManager* serverPlayerManager = g_program->m_server->m_ServerPlayerManager;
-        ClientPlayerManager* clientPlayerManager = g_program->m_server->m_ClientPlayerManager;
-        
-        if (serverPlayerManager != nullptr && g_program->m_clientState == ClientState_Ingame) // Is ServerPlayerManager
+        players[1] = std::vector<ServerPlayer*>();
+        players[2] = std::vector<ServerPlayer*>();
+
+        for (ServerPlayer* player : serverPlayerManager->m_players)
         {
-           
-            std::map<int32_t, std::vector<ServerPlayer*>> players;
-            // Bleh
-            players[1] = std::vector<ServerPlayer*>();
-            players[2] = std::vector<ServerPlayer*>();
-            for (ServerPlayer* player : serverPlayerManager->m_players)
+            if (player)
             {
-                if (player)
+                uint32_t teamId = *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC);
+                if (teamId)
                 {
-                    uint32_t teamId = *reinterpret_cast<uint32_t*>(
-                        reinterpret_cast<uint8_t*>(player) + 0x2BAC); // I have my reasons for doing this instead of using the struct
-                    if (teamId)
-                    {
-                        players[teamId].push_back(player);
-                    }
-                    else
-                    {
-                        players[1].push_back(player);
-                    }
+                    players[teamId].push_back(player);
                 }
-            }
-
-            if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
-            {
-                ImGui::TableNextRow();
-                ImGui::TableNextColumn();
-                ImGui::Text("LIGHT SIDE");
-                ImGui::TableNextColumn();
-                ImGui::Text("DARK SIDE");
-                for (int i = 0; i < 64; i++)
+                else
                 {
-                    ImGui::TableNextRow();
-                    int drew = 0;
-                    for (int j = 1; j <= players.size(); j++)
-                    {
-                        ImGui::TableNextColumn();
-                        if (DrawScoreboardPlayer(players[j], i, true))
-                        {
-                            drew++;
-                        }
-                    }
-                    if (!drew)
-                    {
-                        break;
-                    }
+                    players[1].push_back(player);
                 }
-                ImGui::EndTable();
             }
         }
-        else
+
+        if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
         {
-            if (serverPlayerManager == nullptr && clientPlayerManager && (g_program->m_clientState == ClientState_Ingame  || g_program->m_server->m_isFirstLaunch)) // Is Client Manager
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("LIGHT SIDE");
+            ImGui::TableNextColumn();
+            ImGui::Text("DARK SIDE");
+            for (int i = 0; i < 64; i++)
             {
-                
-                std::map<int32_t, std::vector<ServerPlayer*>> players;
-                // Bleh
-                players[1] = std::vector<ServerPlayer*>();
-                players[2] = std::vector<ServerPlayer*>();
-                for (ServerPlayer* player : clientPlayerManager->m_players)
+                ImGui::TableNextRow();
+                int drew = 0;
+                for (int j = 1; j <= players.size(); j++)
                 {
-                    if (player)
+                    ImGui::TableNextColumn();
+                    if (DrawScoreboardPlayer(players[j], i, true))
                     {
-                        uint32_t teamId = *reinterpret_cast<uint32_t*>(
-                            reinterpret_cast<uint8_t*>(player) + 0x2BAC); // I have my reasons for doing this instead of using the struct
-                        if (teamId)
-                        {
-                            players[teamId].push_back(player);
-                        }
-                        else
-                        {
-                            players[1].push_back(player);
-                        }
+                        drew++;
                     }
                 }
-
-                if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
+                if (!drew)
                 {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("LIGHT SIDE");
-                    ImGui::TableNextColumn();
-                    ImGui::Text("DARK SIDE");
-                    for (int i = 0; i < 64; i++)
-                    {
-                        ImGui::TableNextRow();
-                        int drew = 0;
-                        for (int j = 1; j <= players.size(); j++)
-                        {
-                            ImGui::TableNextColumn();
-                            if (DrawScoreboardPlayer(players[j], i, false))
-                            {
-                                drew++;
-                            }
-                        }
-                        if (!drew)
-                        {
-                            break;
-                        }
-                    }
-                    ImGui::EndTable();
+                    break;
                 }
             }
+            ImGui::EndTable();
         }
     }
     else
     {
-        ImGui::Text("Settings will be available once");
-        ImGui::Text("the game is fully loaded.");
+        std::map<int32_t, std::vector<ServerPlayer*>> players;
+
+        players[1] = std::vector<ServerPlayer*>();
+        players[2] = std::vector<ServerPlayer*>();
+
+        for (ServerPlayer* player : clientPlayerManager->m_players)
+        {
+            if (player)
+            {
+                uint32_t teamId = *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(player) + 0x2BAC);
+                if (teamId)
+                {
+                    players[teamId].push_back(player);
+                }
+                else
+                {
+                    players[1].push_back(player);
+                }
+            }
+        }
+
+        if (ImGui::BeginTable("PLAYER LIST", 2, ImGuiTableFlags_SizingFixedFit))
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("LIGHT SIDE");
+            ImGui::TableNextColumn();
+            ImGui::Text("DARK SIDE");
+            for (int i = 0; i < 64; i++)
+            {
+                ImGui::TableNextRow();
+                int drew = 0;
+                for (int j = 1; j <= players.size(); j++)
+                {
+                    ImGui::TableNextColumn();
+                    if (DrawScoreboardPlayer(players[j], i, true))
+                    {
+                        drew++;
+                    }
+                }
+                if (!drew)
+                {
+                    break;
+                }
+            }
+            ImGui::EndTable();
+        }
     }
     ImGui::End();
 

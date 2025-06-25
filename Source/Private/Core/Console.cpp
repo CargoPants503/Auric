@@ -16,7 +16,7 @@ void SetTeamCommand(ConsoleContext& cc)
     int team;
     stream >> playerName >> team;
 
-    ServerPlayer* player = g_program->m_server->m_ServerPlayerManager->GetPlayer(playerName.c_str());
+    ServerPlayer* player = ServerGameContext::Get()->GetPlayerManager()->GetPlayer(playerName.c_str());
 
     if (player == nullptr)
     {
@@ -66,6 +66,31 @@ void LoadLevelCommand(ConsoleContext& cc)
     );
 }
 
+void AuricDebugCommand(ConsoleContext& cc)
+{
+    auto stream = cc.stream();
+    std::string input;
+    stream >> input;
+
+    if (input == "true" || input == "1")
+    {
+        SetDebugEnabled(true);
+        KYBER_LOG(LogLevel::Console, "AuricDebugCommand: Enabled=true");
+
+    }
+    else if (input == "false" || input == "0")
+    {
+        SetDebugEnabled(false);
+        KYBER_LOG(LogLevel::Console, "AuricDebugCommand: Enabled=false");
+
+    }
+    else
+    {
+        KYBER_LOG(LogLevel::Console, "AuricDebugCommand: Invalid Input");
+    }
+
+}
+
 void RegisterConsoleCommand(StaticConsoleMethodPtr_t func, const char* name, const char* description)
 {
     ConsoleMethod* method = new ConsoleMethod{ func, name, 0, description };
@@ -78,5 +103,6 @@ Console::Console()
 
     RegisterConsoleCommand(&SetTeamCommand, "SetTeam", "<player> <team>");
     RegisterConsoleCommand(&LoadLevelCommand, "LoadLevel", "<LevelPath> <GameMode>");
+    RegisterConsoleCommand(&AuricDebugCommand, "DrawAuricDebug", "<Enabled>");
 }
 } // namespace Kyber

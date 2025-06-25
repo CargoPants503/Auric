@@ -1,7 +1,6 @@
 // Copyright BattleDash. All Rights Reserved.
 
 #pragma once
-#include <Network/SocketManager.h>
 #include <EASTL/string.h>
 #include <EASTL/fixed_vector.h>
 
@@ -204,6 +203,13 @@ public:
     const int type;
 };
 
+class OnlineId
+{
+public:
+    uint64_t m_nativeData; // 0x0000
+    char m_id[16];         // 0x0008
+};
+
 class ClientGameContext
 {
 public: 
@@ -228,18 +234,27 @@ public:
     }
 };
 
-class OnlineId
-{
-public:
-    uint64_t m_nativeData; // 0x0000
-    char m_id[16];         // 0x0008
-};
-
 class ServerGameContext
 {
 public:
     char pad_0000[104];
-    ServerPlayerManager* m_ServerPlayerManager;
+    ServerPlayerManager* playerManager;
+    __int64 serverPeer;
+
+    static ServerGameContext* Get()
+    {
+        return *(ServerGameContext**)0x142C20A00;
+    }
+    
+    ServerPlayerManager* GetPlayerManager()
+    {
+        if (this != nullptr && this->playerManager != nullptr)
+        {
+            return this->playerManager;
+        }
+
+        return nullptr;
+    }
 };
 
 class MemoryArena
