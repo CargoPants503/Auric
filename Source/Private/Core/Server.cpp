@@ -29,6 +29,7 @@
 #define OFFSET_OVERRIDE_SERVERTYPE HOOK_OFFSET(0x14450A9E0)
 #define OFFSET_MESSAGEMANAGERDISPATCHMESSAGE HOOK_OFFSET(0x1432FF410)
 #define OFFSET_CLIENT_INIT_NETWORK HOOK_OFFSET(0x143A97630)
+#define OFFSET_CREATESERVERBACKEND HOOK_OFFSET(0x1441B0470)
 
 //Players
 #define OFFSET_SERVERPLAYERMANAGER HOOK_OFFSET(0x143CACA00)
@@ -286,10 +287,20 @@ void ClientConnectToAddressHk(__int64 inst, const char* ipAddress, const char* s
     }
 }
 
-__int64 ServerPatch2Hk(__int64 inst) 
+__int64 CreateServerBackendHk(BackendType backendType, __int64 serverArena, __int64 configuration)
 {
-
-    return 3;
+    static const auto trampoline = HookManager::Call(CreateServerBackendHk);
+    
+    const char* BackendTypeNames[] = { "Backend_Lan", "Backend_Blaze", "Backend_Peer", "Backend_Local", "Backend_Playground", "Backend_Count_" };
+    std::string type;
+    if (backendType >= 0 && backendType < Backend_Count_)
+        type = BackendTypeNames[backendType];
+    else
+        type = "Unknown";
+    
+    // The only valid backend types are Backend_Peer and Backend_Local. The other 2 crash
+    KYBER_LOG(LogLevel::Debug, "Overrode backend type of " << type << " with type of " << BackendTypeNames[Backend_Local]);
+    return trampoline(Backend_Local, serverArena, configuration);
 }
 
 HookTemplate server_hook_offsets[] = {
@@ -297,10 +308,11 @@ HookTemplate server_hook_offsets[] = {
     { OFFSET_SERVER_START, ServerStartHk },
     { OFFSET_APPLY_SETTINGS, SettingsManagerApplyHk },
     { OFFSET_CLIENT_INIT_NETWORK, ClientInitNetworkHk },
-    { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk },
-    { OFFSET_OVERRIDE_SERVERTYPE, ServerPatch2Hk},
     { OFFSET_SERVERCONNECTION_CREATEPLAYER, ServerConnectionCreatePlayer },
-    { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk }
+    { OFFSET_MESSAGEMANAGERDISPATCHMESSAGE, MessageManagerDispatchMessageHk },
+    { OFFSET_CREATESERVERBACKEND, CreateServerBackendHk },
+    { OFFSET_CLIENT_CONNECTTOADDRESS, ClientConnectToAddressHk }
+
 };
 
 void Server::InitializeGameHooks()
