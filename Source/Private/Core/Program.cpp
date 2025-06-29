@@ -115,6 +115,24 @@ HookTemplate program_hook_offsets[] = {
     { OFFSET_SETTINGS_CTR, LookupSettingsObjectHk}
 };
 
+void Program::InitializeDefaultGameSettings()
+{
+    ClientLobbyInformation* clientLobby = ClientLobbyInformation::Get();
+
+    clientLobby->info->playerCountTeam1 = 40;
+    clientLobby->info->playerCountTeam2 = 40;
+
+    // NetworkSettings
+    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(OFFSET_TYPEINFO_NETWORKSETTINGS));
+    NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
+    networkSettings = reinterpret_cast<NetworkSettings*>(reinterpret_cast<char*>(networkSettings) - 8); // Offset is 8 bytes ahead for whatever reason. Gotta subtract it
+
+    networkSettings->MaxClientCount = 40;
+    networkSettings->MaxLocalPlayerCount = 40;
+
+    KYBER_LOG(LogLevel::Info, "Set default game settings")
+}
+
 void Program::InitializePatches()
 {
     BYTE alwaysTruePatch[6] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };

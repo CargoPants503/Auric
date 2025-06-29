@@ -26,6 +26,7 @@ public:
     ~Program();
 
     DWORD WINAPI InitializationThread();
+    void InitializeDefaultGameSettings();
     void InitializePatches();
     void InitializeGameHooks();
 

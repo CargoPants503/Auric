@@ -176,7 +176,7 @@ void ServerWindow::Draw()
         if (!g_program->m_server->m_running ||  gameSettings->Level == "Levels/FrontEnd/Frontend")
         {
             static int maxPlayers = 40;
-            ImGui::SliderInt("Max Players", &maxPlayers, 2, 64);
+            ImGui::SliderInt("Max Players", &maxPlayers, 2, 40);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();

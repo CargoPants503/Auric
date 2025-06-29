@@ -302,6 +302,50 @@ struct PlayerData2
     uint32_t maxSpectatorCount;           // Offset 0x000C: Maximum number of spectators
 };
 
+struct PlayerInformation2
+{
+    char pad_0000[0x10];
+    uint64_t userId;
+};
+
+struct PlayerInformation
+{
+    uint64_t personaId;
+    char name[0x8];
+    PlayerInformation2* info;
+    char pad_0010[0x10];
+    uint64_t userId;
+};
+
+struct UIPlayerInformation
+{
+    char pad_0000[0x48];
+    PlayerInformation m_players[64];
+
+};
+struct GameModeInformation
+{
+    const char* level;
+    const char* gamemode;
+    uint32_t playerCountTeam1;
+    uint32_t playerCountTeam2;
+};
+
+struct ClientLobbyInformation
+{
+    char pad_0000[0x30];
+    //This stuff is weird, it doesn't like to differentiate between team 1 and 2 consistenly
+    UIPlayerInformation* team1;
+    UIPlayerInformation* team2;
+    char pad_0040[0x28];
+    GameModeInformation* info;
+
+    static ClientLobbyInformation* Get()
+    {
+        return *(ClientLobbyInformation**)0x142CDE3A0;
+    }
+};
+
 struct SocketSpawnInfo
 {
     SocketSpawnInfo(bool isProxied, const char* proxyAddress, const char* serverName)

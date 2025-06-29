@@ -119,6 +119,16 @@ void Server::Start(const char* level, const char* mode, int maxPlayers)
 
     ClientSettings* clientSettings = Settings<ClientSettings>("Client");
     GameSettings* gameSettings = Settings<GameSettings>("Game");
+    ClientLobbyInformation* clientLobby = ClientLobbyInformation::Get();
+
+    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(OFFSET_TYPEINFO_NETWORKSETTINGS));
+    NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
+    networkSettings = reinterpret_cast<NetworkSettings*>(reinterpret_cast<char*>(networkSettings) - 8);
+
+    networkSettings->MaxLocalPlayerCount = maxPlayers;
+    networkSettings->MaxClientCount = maxPlayers;
+    clientLobby->info->playerCountTeam1 = maxPlayers;
+    clientLobby->info->playerCountTeam2 = maxPlayers;
 
     clientSettings->ServerIp = "";
     gameSettings->Level = const_cast<char*>(level);
@@ -298,7 +308,7 @@ __int64 CreateServerBackendHk(BackendType backendType, __int64 serverArena, __in
     else
         type = "Unknown";
     
-    // The only valid backend types are Backend_Peer and Backend_Local. The other 2 crash
+    // The only valid backend types are Backend_Peer and Backend_Local. The other crash
     KYBER_LOG(LogLevel::Debug, "Overrode backend type of " << type << " with type of " << BackendTypeNames[Backend_Local]);
     return trampoline(Backend_Local, serverArena, configuration);
 }
@@ -361,13 +371,6 @@ void Server::InitializeGameSettings()
     GameSettings* gameSettings = Settings<GameSettings>("Game");
     OnlineSettings* onlineSettings = Settings<OnlineSettings>("Online");
     
-    //NetworkSettings
-    __int64 typeInfo_networkSettings = reinterpret_cast<__int64>(reinterpret_cast<__int64*>(OFFSET_TYPEINFO_NETWORKSETTINGS));
-    NetworkSettings* networkSettings = SettingsLookup<NetworkSettings>(typeInfo_networkSettings);
-    auto bytePtr = reinterpret_cast<char*>(networkSettings) - 8; // Offset is 8 bytes ahead for whatever reason. Gotta subtract it :P
-    networkSettings = reinterpret_cast<NetworkSettings*>(bytePtr);
-    
-    networkSettings->MaxClientCount = 40;
     gameTimeSettings->TimeScale = 1;
     wsSettings->ForcePrivateMatchLobby = true;
     wsSettings->NoInteractivityTimeoutTime = 600;
